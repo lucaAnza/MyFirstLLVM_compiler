@@ -1,0 +1,2 @@
+def cane () 3;
+def gatto () 5;
