@@ -105,7 +105,7 @@ private:
   char Op;
   ExprAST* LHS;
   ExprAST* RHS;
-
+  
 public:
   BinaryExprAST(char Op, ExprAST* LHS, ExprAST* RHS);
   Value *codegen(driver& drv) override;
@@ -144,7 +144,7 @@ public:
   Value *codegen(driver& drv) override;
 }; 
 
-/// VarBindingAST
+/// VarBindingAST - Rappresenta il link tra  nome_variabile <-> valore
 class VarBindingAST: public RootAST {
 private:
   const std::string Name;
