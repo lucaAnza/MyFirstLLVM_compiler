@@ -21,4 +21,10 @@
 
 ### .s version
 1. Save in a file with .s extension the IR code    
-2. `clang -o file_exe input.s`            
+2. `clang -o file_exe input.s`
+
+
+
+## REMEMBER !!!
+
+On *parser2.yy* you can find a relative implemention of the first grammar version.
