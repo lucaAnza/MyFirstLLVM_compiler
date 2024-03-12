@@ -1,0 +1,4 @@
+Kaleidoscope1 (Kaleidoscope1-20240115T155851Z-001.zip) -> lexer_cpp(nativo)
+Slideset4 -> lexer_cpp(using Flex)
+slideset7-Kaleidoscope1.0_RD_parser-20240117T181852Z-001.zip -> parser_discesa_ricorsiva_backtracking
+
