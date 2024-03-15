@@ -24,8 +24,8 @@
 ### 6. Sposta il file CMakeLists.txt in /SRC     ( DOVE TROVO QUESTO FILE ? )
 
 ### 7. Manda il seguente comando :  
-`cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$ROOT/INSTALL $ROOT/SRC`
+`cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$ROOT/INSTALL -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_TARGETS_TO_BUILD=host $ROOT/SRC/llvm-project-llvmorg-17.0.6/llvm/`
 
 ### 8. Manda il segutente comando :  
-`make -j <numero core`
+`make -j <numero core>`
 
