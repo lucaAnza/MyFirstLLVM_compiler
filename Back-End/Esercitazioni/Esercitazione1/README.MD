@@ -114,36 +114,36 @@ flowchart TD
 1.Cambiare il file **TestPass.cpp** nel seguente modo : 
 
 ```c++
+#include <llvm/IR/Instructions.h>   // Aggiungere questa direttiva
+
+using namespace llvm;
+
 PreservedAnalyses TestPass::run(Function &F,
                             FunctionAnalysisManager &AM) {
       
-      Module *M = F.getParent(); // Ottengo il modulo che contiene la funzione
-
-      //Calcolo chiamate a funzione del modulo ( verrà eseguita 2 volte )
-      unsigned n_ff = 0;
-      for (auto iter = M->begin() ; iter != M->end() ; ++iter){
-            n_ff++;
-      }
-
       // Calcolo numero BasicBlocks + numero Instructions
       unsigned n_bb = 0;
       unsigned n_ii = 0;
+      unsigned n_ff = 0;
       for (auto iter = F.begin() ; iter != F.end() ; ++iter){
             BasicBlock &B = *iter;
             for (auto iter2 = B.begin() ; iter2 != B.end() ; ++iter2){
-                  //Instruction &I = *iter2;
+                  Instruction &I = *iter2;
                   n_ii++;
+                  // Conta le chiamate a funzione
+                  if ( CallInst *call_inst = dyn_cast<CallInst>(&I))
+                        n_ff++;
             }
             n_bb ++;
       }
 
       //Stampa finale
       errs() <<"\n";
-      errs() << "Questa funzione si chiama" << F.getName() <<"\n";   //1.Nome
-      errs() << "Numero di parametri " << F.arg_size() <<"\n";  //2.Num.Parametri
-      errs() << "Numero di chiamate a funzione del modulo " << n_ff <<"\n";    //3. n_functions
-      errs() << "Numero di basicBlocks " << n_bb <<"\n";    //4. n_basic_blocks
-      errs() << "Numero di istruzioni " << n_ii <<"\n";    //5. n_instructions
+      errs() << "Questa funzione si chiama : " << F.getName() <<"\n";   //1.Nome
+      errs() << "Numero di parametri : " << F.arg_size() <<"\n";  //2.Num.Parametri
+      errs() << "Numero di chiamate a funzione nel modulo :  " << n_ff <<"\n";    //3. n_functions
+      errs() << "Numero di basicBlocks :  " << n_bb <<"\n";    //4. n_basic_blocks
+      errs() << "Numero di istruzioni :  " << n_ii <<"\n";    //5. n_instructions
       
       return PreservedAnalyses::all();
  
@@ -155,6 +155,56 @@ PreservedAnalyses TestPass::run(Function &F,
 ⬤ Consegna :
 
 ```text
-<EXPECTED CONSEGNA...>
+Trasformare il Function Pass in un Module Pass,
+preservando la sua funzionalità
+
+Documentation on : < https://llvm.org/doxygen/classes.html >
 ```
 
+1.Cambiare il file **TestPass.cpp**
+
+2.Modificare `PreservedAnalyses TestPass::run(Function &F... -> Pres..(Module &M...)`
+
+3.Mi da errore aiuto : 
+
+```c++
+PreservedAnalyses TestPass::run(Module &M,
+                            AnalysisManager &AM) {
+      
+      
+      //Itera ogni funzione del modulo
+      for (auto iter_m = M.begin() ; iter_m != M.end() ; ++iter_m){
+            Function &F = *iter_m;
+            // Calcolo numero BasicBlocks + numero Instructions
+            unsigned n_bb = 0;
+            unsigned n_ii = 0;
+            unsigned n_ff = 0;
+            for (auto iter = F.begin() ; iter != F.end() ; ++iter){
+                  BasicBlock &B = *iter;
+                  for (auto iter2 = B.begin() ; iter2 != B.end() ; ++iter2){
+                        Instruction &I = *iter2;
+                        n_ii++;
+                        // Conta le chiamate a funzione
+                        if ( CallInst *call_inst = dyn_cast<CallInst>(&I))
+                              n_ff++;
+                  }
+                  n_bb ++;
+            }
+
+            //Stampa finale
+            errs() <<"\n";
+            errs() << "Questa funzione si chiama : " << F.getName() <<"\n";   //1.Nome
+            errs() << "Numero di parametri : " << F.arg_size() <<"\n";  //2.Num.Parametri
+            errs() << "Numero di chiamate a funzione nel modulo :  " << n_ff <<"\n";    //3. n_functions
+            errs() << "Numero di basicBlocks :  " << n_bb <<"\n";    //4. n_basic_blocks
+            errs() << "Numero di istruzioni :  " << n_ii <<"\n";    //5. n_instructions
+      }
+      
+      return PreservedAnalyses::all();
+ 
+}
+```
+
+## DUBBI
+
+1. Perchè bisogna includere <llvm/IR/Instructions.h> , mentre per Instruction,BasicBlock,... non serve?
