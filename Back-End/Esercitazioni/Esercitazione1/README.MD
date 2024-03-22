@@ -111,7 +111,7 @@ flowchart TD
     
 ```
 
-1.Cambiare il file **TestPass.cpp** nel seguente modo : 
+1.Cambiare il file **TestPass.cpp** nel seguente modo:
 
 ```c++
 #include <llvm/IR/Instructions.h>   // Aggiungere questa direttiva
@@ -165,11 +165,9 @@ Documentation on : < https://llvm.org/doxygen/classes.html >
 
 2.Modificare `PreservedAnalyses TestPass::run(Function &F... -> Pres..(Module &M...)`
 
-3.Mi da errore aiuto : 
-
 ```c++
 PreservedAnalyses TestPass::run(Module &M,
-                            AnalysisManager &AM) {
+                            ModuleAnalysisManager &AM) {
       
       
       //Itera ogni funzione del modulo
@@ -204,6 +202,17 @@ PreservedAnalyses TestPass::run(Module &M,
  
 }
 ```
+
+3.Modificare anche l'header del file **TestPass.h**
+
+4.Modificare il passBuilder -> `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Passes/PassRegistry.def`
+
+`FUNCTION_PASS("testpass", TestPass())`   --->   `MODULE_PASS("testpass", TestPass())`
+
+
+
+
+
 
 ## DUBBI
 
