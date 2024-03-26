@@ -1,5 +1,41 @@
 # ESERCITAZIONE 2
 
+## Prerequisiti
+
+· Ricorda il seguente schema di classi:
+
+```mermaid
+flowchart TD
+    
+    Value --> User
+
+    User --> Instruction
+
+    Instruction
+```
+
+### Value
+
+Ha dei metodi fondamentali come `getType() , hasName() , getName(), ...`.  
+Inoltre ogni nodo _User_ ha una lista di _Value_ che lo compongono. Dato un _Instruction_ per ottenere tutti i suoi operandi fare:
+
+```c++
+User &Inst = ...;
+for (auto Iter = Inst.op_begin(); Iter != Inst.op_end(); ++Iter)
+    { Value *Operand = *Iter; }
+```
+
+### User
+
+Da _User_,oltre agli operandi (Value), è possibile ottenere chi utilizza quella determinata instruzione.
+
+```c++
+User &Inst = ...;
+for (auto Iter = Inst.user_begin(); Iter != Inst.user_end(); ++Iter)
+    { User *InstUser = *Iter; }
+```
+
+
 ## ESERCIZIO 1
 
 ### Parte1
