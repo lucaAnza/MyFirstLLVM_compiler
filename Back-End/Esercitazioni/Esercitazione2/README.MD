@@ -126,14 +126,6 @@ ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
 1.Modificare il file **LocalOpts.cpp**
 
 ```c++
-//===-- LocalOpts.cpp - Example Transformations --------------------------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-
 #include "llvm/Transforms/Utils/LocalOpts.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/InstrTypes.h"
@@ -161,18 +153,25 @@ bool runOnBasicBlock(BasicBlock &B) {
             outs()<<"Operando[1] : "<<*op_1<<"\n";
 
             ConstantInt *C;
+            Value *moltiplicando;
             if (C = dyn_cast<ConstantInt>(op_1)) {
                 outs()<<"Operando[1] è una costante intera ("<<C->getValue()<<")\n";
-                Value *moltiplicando = op_0;
+                moltiplicando = op_0;
             }else if(C = dyn_cast<ConstantInt>(op_0)){
                 outs()<<"Operando[0] è una costante intera ("<<C->getValue()<<")\n";
-                Value *moltiplicando = op_1;
+                moltiplicando = op_1;
             }
             
             //Controllo se ho trovato una costante
-            if (C){
+            if (C && C->getValue().isPowerOf2()){
                 const llvm::APInt costanteIntera = C->getValue();
-                outs()<<"Costante trovata!\n\n";
+                outs()<<"Costante trovata, con potenza di 2 trovata!\n\n";
+                // Conversione da mul -> shi
+                Constant *shiftConst = ConstantInt::get(C->getType() , C->getValue().exactLogBase2());
+                outs()<<"Provo a creare una nuova istruzione con v1 = "<<*moltiplicando<<" e v2 = "<<C->getValue()<<"\n";
+                Instruction *new_shift = BinaryOperator::Create(BinaryOperator::Shl , moltiplicando , shiftConst); 
+                //Inserimento istruzione dopo moltiplicazione
+                new_shift ->insertAfter(mul);
             }
 
         }
@@ -201,6 +200,7 @@ PreservedAnalyses LocalOpts::run(Module &M,
             return PreservedAnalyses::none();
     return PreservedAnalyses::all();
 }
+
 ```
 
 2.Soluzione consigli:
