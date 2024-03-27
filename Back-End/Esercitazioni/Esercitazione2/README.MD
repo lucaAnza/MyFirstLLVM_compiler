@@ -79,7 +79,7 @@ namespace llvm {
 1. `make opt`
 2. `install opt`
 
-7.Vai in `/LLVM` 
+7.Vai in `/LLVM`
 
 8.Mandare il comando source `setup.sh` ( Eseguire questo step se si è settato il file setup.sh correttamente )
 
@@ -110,10 +110,10 @@ moltiplicazione che hanno tra gli operandi una costante che
 è una potenza di 2 con una shift (strength reduction)
 Utilizzare solo funzioni di LLVM, non usare moduli matematici ( ex: #cmath )
 Documentation on : < https://llvm.org/doxygen/classes.html >
-
-
-<inserisci immagine>
 ```
+
+![consegna](/Esercitazioni/Esercitazione2/screen_1.png)
+
 
 ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
 
@@ -125,10 +125,88 @@ ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
 
 1.Modificare il file **LocalOpts.cpp**
 
-2. Soluzione consigli : 
+```c++
+//===-- LocalOpts.cpp - Example Transformations --------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#include "llvm/Transforms/Utils/LocalOpts.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/InstrTypes.h"
+// L'include seguente va in LocalOpts.h
+#include <llvm/IR/Constants.h>
+
+using namespace llvm;
+
+bool runOnBasicBlock(BasicBlock &B) {
+    
+    unsigned cont = 0;
+    //Itera tutte le istruzioni
+    for (auto iter_i = B.begin() ; iter_i != B.end() ; ++iter_i){
+        cont++;
+        Instruction &I = *iter_i;
+        
+        if (I.isBinaryOp() && I.getOpcode() == Instruction::Mul) {
+            BinaryOperator *mul = dyn_cast<BinaryOperator>(&I);
+            outs()<<"("<<*mul<<")" <<" è una moltiplicazione\n";
+            
+            Value *op_0 = mul->getOperand(0);
+            Value *op_1 = mul->getOperand(1);
+
+            outs()<<"Operando[0] : "<<*op_0<<"\n";
+            outs()<<"Operando[1] : "<<*op_1<<"\n";
+
+            ConstantInt *C;
+            if (C = dyn_cast<ConstantInt>(op_1)) {
+                outs()<<"Operando[1] è una costante intera ("<<C->getValue()<<")\n";
+                Value *moltiplicando = op_0;
+            }else if(C = dyn_cast<ConstantInt>(op_0)){
+                outs()<<"Operando[0] è una costante intera ("<<C->getValue()<<")\n";
+                Value *moltiplicando = op_1;
+            }
+            
+            //Controllo se ho trovato una costante
+            if (C){
+                const llvm::APInt costanteIntera = C->getValue();
+                outs()<<"Costante trovata!\n\n";
+            }
+
+        }
+    }
+    outs() << "\nIstruzioni analizzate : "<<cont<<"\n";
+    return true;
+}
+
+bool runOnFunction(Function &F) {
+    bool Transformed = false;
+
+    for (auto Iter = F.begin(); Iter != F.end(); ++Iter) {
+        if (runOnBasicBlock(*Iter)) {
+            Transformed = true;
+        }
+    }
+
+    return Transformed;
+}
+
+
+PreservedAnalyses LocalOpts::run(Module &M,
+                                      ModuleAnalysisManager &AM) {
+    for (auto Fiter = M.begin(); Fiter != M.end(); ++Fiter)
+        if (runOnFunction(*Fiter))
+            return PreservedAnalyses::none();
+    return PreservedAnalyses::all();
+}
+```
+
+2.Soluzione consigli:
 
 -> Per il logaritmo `exactLogBase2()`
--> Costruttore 
+-> Costruttore
 
 
 ## Primo assignment

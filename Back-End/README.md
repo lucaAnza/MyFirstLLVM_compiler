@@ -23,8 +23,12 @@
 
 
 ### 6. Manda il seguente comando :  
-`cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$ROOT/INSTALL -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_TARGETS_TO_BUILD=host $ROOT/SRC/llvm-project-llvmorg-17.0.6/llvm/`
+
+`cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$ROOT/INSTALL -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_TARGETS_TO_BUILD=host $ROOT/SRC/llvm-project-llvmorg-17.0.6/llvm/`  
+· ATTENZIONE : Se restituisce qualche errore cancellare tutti i file all'interno di /BUILD e riprovare.
 
 ### 7. Manda il segutente comando :  
 `make -j <numero core>`
 
+### 8. Manda il seguente comando : 
+`make install`
