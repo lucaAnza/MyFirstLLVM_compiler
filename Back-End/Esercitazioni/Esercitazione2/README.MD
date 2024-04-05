@@ -204,6 +204,7 @@ bool runOnBasicBlock(BasicBlock &B) {
                 Instruction *new_shift = BinaryOperator::Create(BinaryOperator::Shl , moltiplicando , shiftConst); 
                 //Inserimento istruzione dopo moltiplicazione
                 new_shift ->insertAfter(mul);
+                mul->replaceAllUsesWith(new_shift);
             }else{
                 outs()<<"La seguente moltiplizazione NON ha al suo interno una potenza di 2!\n\n";
             }
@@ -212,6 +213,7 @@ bool runOnBasicBlock(BasicBlock &B) {
     }
     outs() << "\nIstruzioni analizzate : "<<cont<<"\n";
     return true;
+
 }
 
 bool runOnFunction(Function &F) {
@@ -236,10 +238,24 @@ PreservedAnalyses LocalOpts::run(Module &M,
 }
 ```
 
-2.Soluzione consigli:
+· Risultato finale:
 
--> Per il logaritmo `exactLogBase2()`
--> Costruttore
+``` text
+
+; ModuleID = 'Foo-optimized.bc'
+source_filename = "TEST/Foo.ll"
+
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
+  %3 = add nsw i32 %1, 1
+  %4 = mul nsw i32 %3, 2
+  %5 = shl i32 %3, 1           <--------------- Aggiunta della nuova istruzione creata ( left shitf <<1 == n * 2 )
+  %6 = shl i32 %0, 1
+  %7 = sdiv i32 %6, 4
+  %8 = mul nsw i32 %5, %7      <--------------- Sostituzione di %4 -> %5
+  ret i32 %8
+}
+
+```
 
 
 ## Primo assignment
@@ -249,3 +265,5 @@ PreservedAnalyses LocalOpts::run(Module &M,
 2. Strength Reduction -> la cosa avanzata è che magari se la potenza è uguale a 15. Si può fare shift + add
 3. Multi-Instruction Optimization -> ...
 ```
+
+
