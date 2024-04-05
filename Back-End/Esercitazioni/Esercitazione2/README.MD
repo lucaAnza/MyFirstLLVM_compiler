@@ -45,7 +45,7 @@ define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) #0 {
 ### Value
 
 Ha dei metodi fondamentali come `getType() , hasName() , getName(), ...`.  
-Inoltre ogni nodo _User_ ha una lista di _Value_ che lo compongono. Dato un _Instruction_ per ottenere tutti i suoi operandi fare:
+Inoltre ogni nodo *User* ha una lista di *Value* che lo compongono. Dato un *Instruction* per ottenere tutti i suoi operandi fare:
 
 ```c++
 User &Inst = ...;
@@ -55,7 +55,7 @@ for (auto Iter = Inst.op_begin(); Iter != Inst.op_end(); ++Iter)
 
 ### User
 
-Da _User_,oltre agli operandi (Value), è possibile ottenere chi utilizza quella determinata instruzione.
+Da *User* ,oltre agli operandi (Value), è possibile ottenere chi utilizza quella determinata instruzione.
 
 ```c++
 User &Inst = ...;
@@ -256,14 +256,3 @@ define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
 }
 
 ```
-
-
-## Primo assignment
-
-```text
-1. Algebraic Identity -> ...
-2. Strength Reduction -> la cosa avanzata è che magari se la potenza è uguale a 15. Si può fare shift + add
-3. Multi-Instruction Optimization -> ...
-```
-
-
