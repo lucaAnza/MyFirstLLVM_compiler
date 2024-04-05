@@ -14,6 +14,34 @@ flowchart TD
     Instruction
 ```
 
+· Ricordati che:
+
+- *Foo-optimized.bc* è il file binario generato
+- *Foo.ll* è il file(IR) che stiamo ottimizando
+
+``` c++
+; int foo(int e, int a) {
+;   int b = a + 1;
+;   int c = b * 2;
+;   b = e << 1;
+;   int d = b / 4;
+;   return c * d;
+; }
+```
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ IR Code ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+``` text
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) #0 {
+  %3 = add nsw i32 %1, 1
+  %4 = mul nsw i32 %3, 2
+  %5 = shl i32 %0, 1
+  %6 = sdiv i32 %5, 4
+  %7 = mul nsw i32 %4, %6
+  ret i32 %7
+}
+```
+
 ### Value
 
 Ha dei metodi fondamentali come `getType() , hasName() , getName(), ...`.  
@@ -36,7 +64,7 @@ for (auto Iter = Inst.user_begin(); Iter != Inst.user_end(); ++Iter)
 ```
 
 
-## ESERCIZIO 1
+## ESERCIZIO 1  (Analisi di LocalOpts.cpp)
 
 ### Parte1
 
@@ -101,18 +129,18 @@ Ora è possibile analizzare il file **LocalOpts.cpp** per capire cosa fa. Inoltr
 
 
 
-## ESERCIZIO 2
+## ESERCIZIO 2  (Modifica di LocalOpts.cpp)
 
 ```text
-Per esercitarci a manipolare la IR modifichiamo adesso il
-passo LocalOpts.cpp perché sostituisca tutte le operazioni di
+Per esercitarci a manipolare la IR *modifichiamo adesso il
+passo LocalOpts.cpp* perché sostituisca tutte le operazioni di
 moltiplicazione che hanno tra gli operandi una costante che
 è una potenza di 2 con una shift (strength reduction)
 Utilizzare solo funzioni di LLVM, non usare moduli matematici ( ex: #cmath )
 Documentation on : < https://llvm.org/doxygen/classes.html >
 ```
 
-![consegna](/Esercitazioni/Esercitazione2/screen_1.png)
+![consegna](/Back-End/Esercitazioni/Esercitazione2/screen_1.png)
 
 
 ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
@@ -121,7 +149,9 @@ ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
 2. `install opt`
 3. `cd ..`  
 4. `INSTALL/bin/opt -p localopts TEST/Foo.ll -o Foo-optimized.bc`  
-(esegui i passi di ottimizazione [nei passi fa parte LocalOpts.cpp] )
+(esegui i passi di ottimizazione sul file *Foo.ll* e mette crea un file binario *Foo-optimized.bc* )
+5. (Optional) `INSTALL/bin/llvm-dis Foo-optimized.bc -o Foo.optimized.ll`
+(trasforma il file binario -> file IR. In questo modo è più facile vedere il risultato )
 
 1.Modificare il file **LocalOpts.cpp**
 
@@ -137,12 +167,14 @@ using namespace llvm;
 bool runOnBasicBlock(BasicBlock &B) {
     
     unsigned cont = 0;
+    
     //Itera tutte le istruzioni
     for (auto iter_i = B.begin() ; iter_i != B.end() ; ++iter_i){
         cont++;
         Instruction &I = *iter_i;
         
         if (I.isBinaryOp() && I.getOpcode() == Instruction::Mul) {
+
             BinaryOperator *mul = dyn_cast<BinaryOperator>(&I);
             outs()<<"("<<*mul<<")" <<" è una moltiplicazione\n";
             
@@ -162,16 +194,18 @@ bool runOnBasicBlock(BasicBlock &B) {
                 moltiplicando = op_1;
             }
             
-            //Controllo se ho trovato una costante
+            //Controllo se ho trovato una costante e se la costante è una potenza di 2
             if (C && C->getValue().isPowerOf2()){
                 const llvm::APInt costanteIntera = C->getValue();
-                outs()<<"Costante trovata, con potenza di 2 trovata!\n\n";
+                outs()<<"La seguente moltiplizazione ha al suo interno una potenza di 2!\n\n";
                 // Conversione da mul -> shi
                 Constant *shiftConst = ConstantInt::get(C->getType() , C->getValue().exactLogBase2());
                 outs()<<"Provo a creare una nuova istruzione con v1 = "<<*moltiplicando<<" e v2 = "<<C->getValue()<<"\n";
                 Instruction *new_shift = BinaryOperator::Create(BinaryOperator::Shl , moltiplicando , shiftConst); 
                 //Inserimento istruzione dopo moltiplicazione
                 new_shift ->insertAfter(mul);
+            }else{
+                outs()<<"La seguente moltiplizazione NON ha al suo interno una potenza di 2!\n\n";
             }
 
         }
@@ -200,7 +234,6 @@ PreservedAnalyses LocalOpts::run(Module &M,
             return PreservedAnalyses::none();
     return PreservedAnalyses::all();
 }
-
 ```
 
 2.Soluzione consigli:
