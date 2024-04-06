@@ -161,13 +161,15 @@ ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
 #include "llvm/IR/InstrTypes.h"
 // L'include seguente va in LocalOpts.h
 #include <llvm/IR/Constants.h>
+#include <vector>
 
 using namespace llvm;
 
 bool runOnBasicBlock(BasicBlock &B) {
     
     unsigned cont = 0;
-    
+    std::vector<Instruction*> toDelete;
+
     //Itera tutte le istruzioni
     for (auto iter_i = B.begin() ; iter_i != B.end() ; ++iter_i){
         cont++;
@@ -186,10 +188,10 @@ bool runOnBasicBlock(BasicBlock &B) {
 
             ConstantInt *C;
             Value *moltiplicando;
-            if (C = dyn_cast<ConstantInt>(op_1)) {
+            if ( (C = dyn_cast<ConstantInt>(op_1)) ) {
                 outs()<<"Operando[1] è una costante intera ("<<C->getValue()<<")\n";
                 moltiplicando = op_0;
-            }else if(C = dyn_cast<ConstantInt>(op_0)){
+            }else if( (C = dyn_cast<ConstantInt>(op_0)) ){
                 outs()<<"Operando[0] è una costante intera ("<<C->getValue()<<")\n";
                 moltiplicando = op_1;
             }
@@ -205,12 +207,21 @@ bool runOnBasicBlock(BasicBlock &B) {
                 //Inserimento istruzione dopo moltiplicazione
                 new_shift ->insertAfter(mul);
                 mul->replaceAllUsesWith(new_shift);
+                //Aggiungo l'istruzione alle istruzioni da eliminare
+                toDelete.push_back(&I);
             }else{
                 outs()<<"La seguente moltiplizazione NON ha al suo interno una potenza di 2!\n\n";
             }
 
         }
     }
+
+    //Cancellazione di tutte le istruzioni inutili
+    for (auto& element : toDelete) {
+        outs()<<"Cancello la seguente istruzione : "<<*element<<"\n";
+        element->eraseFromParent();
+    }
+
     outs() << "\nIstruzioni analizzate : "<<cont<<"\n";
     return true;
 
@@ -238,7 +249,7 @@ PreservedAnalyses LocalOpts::run(Module &M,
 }
 ```
 
-· Risultato finale:
+· Risultato finale - senza cancellazione:
 
 ``` text
 
@@ -255,4 +266,20 @@ define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
   ret i32 %8
 }
 
+```
+
+· Risultato finale - con cancellazione:
+
+``` text
+; ModuleID = 'Foo-optimized.bc'
+source_filename = "TEST/Foo.ll"
+
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
+  %3 = add nsw i32 %1, 1
+  %4 = shl i32 %3, 1
+  %5 = shl i32 %0, 1
+  %6 = sdiv i32 %5, 4
+  %7 = mul nsw i32 %4, %6
+  ret i32 %7
+}
 ```
