@@ -18,25 +18,26 @@ Example -> `a = b + 1, c = a − 1 ⇒a = b + 1, c = b`
 1.Creazione del codice IR di prova
 
 ```text
-; Value -> C++ name
-; %3 -> b
-; %4 -> a
-; %5 -> c
 
 ; C++ - programm
 ; b = 1+1
 ; a = b + 1
 ; c = a-1 
+; d = c * 4
+; e = c + 3
+; return e
 ; ...
 
 define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
-  %3 = add nsw i32 1, 1
-  %4 = add nsw i32 %3, 1
-  %5 = sub nsw i32 %4 , 1
-  %6 = shl i32 %0, 1
-  %7 = mul nsw i32 %3, %4
-  ret i32 %7
+  %b = add nsw i32 1  , 1
+  %a = add nsw i32 %b , 1
+  %c = sub nsw i32 %a , 1
+  %3 = mul nsw i32 %c , 4
+  %4 = add nsw i32 %c , 3
+  ret i32 %4
 }
+
+
 ```
 
 2.Modifica del file LocalOpts.cpp
@@ -49,6 +50,7 @@ Code:
 #include "llvm/Transforms/Utils/LocalOpts.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/InstrTypes.h"
+// L'include seguente va in LocalOpts.h
 #include <llvm/IR/Constants.h>
 #include <vector>
 
@@ -58,11 +60,8 @@ using namespace llvm;
 // Funzione che ritorna il value che dovrei mettere al posto della sottrazione
 Value* findOperator(BasicBlock::iterator sottrazione , BasicBlock::iterator primaIstruzione , Value* var , const llvm::APInt costanteSub ){  
 
-    //Instruction *i = dyn_cast<Instruction>(var);
-    
-    // Itera le istruzioni partendo da sottrazione -> B.begin()                  // TO-DO : migliorare ciclo
+    // Itera le istruzioni partendo dalla sottrazione e arriva fino all'inizio (primaIstruzione)               // TO-DO : migliorare ciclo
     BasicBlock::iterator it = sottrazione;
-    Value* V;
     ConstantInt* C0,*C1;
     do{
         if(it == primaIstruzione)
@@ -91,13 +90,13 @@ Value* findOperator(BasicBlock::iterator sottrazione , BasicBlock::iterator prim
                     outs()<<"Costante uguale a quella della sottrazione! : \n";
                     return instruction->getOperand(0);
                 }
+            }else{
+                outs()<<"Nessuna costante trovata!\n";
             }
         }
-        
     }while(true);
 
 
-    
     return NULL;
 
 }
@@ -106,7 +105,7 @@ Value* findOperator(BasicBlock::iterator sottrazione , BasicBlock::iterator prim
 bool runOnBasicBlock(BasicBlock &B) {
     
     unsigned cont = 0;
-    std::vector<Instruction*> candidates;  
+    std::vector<Instruction*> toDelete;  
     
     //Itera tutte le istruzioni
     for(auto iter_i = B.begin() ; iter_i != B.end() ; ++iter_i){
@@ -134,26 +133,31 @@ bool runOnBasicBlock(BasicBlock &B) {
             if(C){
                 const llvm::APInt costanteIntera = C->getValue();
                 Value* new_value = findOperator(iter_i , B.begin() , variabile , costanteIntera);
-                outs() << "Nuovo valore che devo mettere  c = ... <----- = {"<<*new_value<<"} \n";
-
-                // Crea una nuova istruzione c = b
-                // Controlla come si crea un'istruzione di assegnamento
-
-                /*
-                // Conversione da mul -> shi
-                Constant *shiftConst = ConstantInt::get(C->getType() , C->getValue().exactLogBase2());
-                outs()<<"Provo a creare una nuova istruzione con v1 = "<<*moltiplicando<<" e v2 = "<<C->getValue()<<"\n";
-                Instruction *new_shift = BinaryOperator::Create(BinaryOperator::Shl , moltiplicando , shiftConst); 
-                //Inserimento istruzione dopo moltiplicazione
-                new_shift ->insertAfter(mul);
-                mul->replaceAllUsesWith(new_shift);
-                */
+                if(new_value){  // Controllo se ho trovato un addizione con le caratteristiche desiderate
+                    outs() << "Nuovo valore che devo mettere  c = ... <----- = {"<<*new_value<<"} \n";
+                    I.replaceAllUsesWith(new_value);
+                    toDelete.push_back(&I);
+                }else{
+                    outs()<< "Non ho trovato nessuna <Add> con le caratteristiche adatte!\n";
+                }
+                
             }else{
                 outs()<<"La seguente sottrazione NON ha una costante intera\n\n";
             }
-
         }
+        outs()<<"\n\n";
+        
     }
+
+
+    //Cancellazione di tutte le istruzioni inutili
+    for (auto& element : toDelete) {
+        outs()<<"Cancello la seguente istruzione : "<<*element<<"\n";
+        element->eraseFromParent();
+    }
+
+
+    //Debug
     outs() << "\nIstruzioni analizzate : "<<cont<<"\n";
     return true;
 
@@ -179,6 +183,5 @@ PreservedAnalyses LocalOpts::run(Module &M,
             return PreservedAnalyses::none();
     return PreservedAnalyses::all();
 }
-
 ```
 
