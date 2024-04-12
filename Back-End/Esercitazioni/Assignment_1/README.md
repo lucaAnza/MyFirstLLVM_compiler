@@ -1,187 +1,195 @@
-# Primo assignment
+# Primo assignment - llvm-optimization-passes
 
 Documentation on : [LLVM Documentation](https://llvm.org/doxygen/classes.html)
+Il file _LocalOpts.cpp_ include tutte e 3 le ottimizazioni.
 
 
-## Esercizio1 - Algebraic identity
+• Implementare tre passi LLVM (dentro lo stesso passo LocalOpts già scritto durante il LAB 2) che realizzano le seguenti ottimizzazioni locali:
 
-//TO DO
+## 1. Algebraic Identity
 
-## Esercizio2 - Strength Reduction (più avanzato)
+$$
+x + 0 = 0 +x \space \rightarrow \space x
+$$
 
-//TO DO
+$$
+x * 1 = 1 * x \space \rightarrow \space x
+$$
 
-## Esercizio3 - Multi-Instruction Optimization
+TEST foo.ll modificato , sono state aggiunte somme con 0 e moltipliacazioni per 1 :
+Foo.ll
 
-Example -> `a = b + 1, c = a − 1 ⇒a = b + 1, c = b`
+```llvm
+define dso_local i32 @foo(i32 noundef %0 ,i32 noundef %1 ) #0 {
+  %3 = add nsw i32 %1, 0      ; identità algebrica n + 0
+  %4 = mul nsw i32 %3, 2
+  %5 = shl i32 %0, 1
+  %6 = sdiv i32 %5, 4
+  %7 = mul nsw i32 %4, 1      ; identità algebrica  n * 1
+  %8 = add nsw i32 %7, %6
+  %9 = add nsw i32 %8, 4
+  %10 = add nsw i32 %1, %9
+  ret  i32 %7
+}
+```
 
-1.Creazione del codice IR di prova
+Foo ottimizzato :
+
+```llvm
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
+  ----------------------    ; Eliminata istruzione ( %3 = add nsw i32 %1, 0 )
+  %3 = mul nsw i32 %1, 2    ; Modificato operando[0]
+  %4 = shl i32 %0, 1
+  %5 = sdiv i32 %4, 4
+  ----------------------    ; Eliminata istruzione ( %7 = mul nsw i32 %4, 1 )
+  %6 = add nsw i32 %3, %5
+  %7 = add nsw i32 %6, 4
+  %8 = add nsw i32 %1, %7
+  ret i32 %3                ; Modificato indirizzo di ritorno
+}
+```
+
+## 2.StrengthReduction
+
+$$
+15 * x = x * 15 \space \rightarrow \space(x<<4)-x
+$$
+
+$$
+y = x \div 8 \space \rightarrow \space y = x >> 3
+$$
+
+_IR Iniziale_:
+
+```llvm
+define i32 @testSR(i32 noundef %0) {
+  %2 = mul i32 %0, 8
+  %3 = add i32 %2, 1
+  %4 = mul i32 8, %0
+  %d = udiv i32 %2, 32
+  %5 = add i32 %4, 1
+  %6 = mul i32 15, %0
+  ret i32 %6
+}
+```
+
+_IR dopo l'ottimizzazione:_
+
+```llvm
+; ModuleID = 'basic_sr.bc'
+source_filename = "TEST/basic_sr.ll"
+
+define i32 @testSR(i32 noundef %0) {
+  %2 = shl i32 %0, 3
+  %3 = add i32 %2, 1
+  %4 = shl i32 %0, 3
+  %5 = lshr i32 %2, 5
+  %6 = add i32 %4, 1
+  %7 = shl i32 %0, 4
+  %8 = sub i32 %7, %0
+  ret i32 %8
+}
+```
+
+<br><br>
+
+## 3. Multi-InstructionOptimization
 
 ```text
+𝑎 = 𝑏 + 1    ⇒    𝑎 = 𝑏 + 1
+𝑐 = 𝑎 − 1    ⇒    𝑐 = 𝑏
+```
 
+_IR iniziale:_
+
+```c++
 ; C++ - programm
 ; b = 1+1
 ; a = b + 1
-; c = a-1 
+; c = a-1
 ; d = c * 4
 ; e = c + 3
 ; return e
 ; ...
+```
 
+```llvm
 define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
   %b = add nsw i32 1  , 1
   %a = add nsw i32 %b , 1
-  %c = sub nsw i32 %a , 1
+  %c = sub nsw i32 %a , 1   ; sottrazione candidata
   %3 = mul nsw i32 %c , 4
   %4 = add nsw i32 %c , 3
   ret i32 %4
 }
-
-
 ```
 
-2.Modifica del file LocalOpts.cpp
+_IR dopo l'ottimizazione:_
 
-
-Code:
-
-``` c++
-
-#include "llvm/Transforms/Utils/LocalOpts.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/InstrTypes.h"
-// L'include seguente va in LocalOpts.h
-#include <llvm/IR/Constants.h>
-#include <vector>
-
-using namespace llvm;
-
-
-// Funzione che ritorna il value che dovrei mettere al posto della sottrazione
-Value* findOperator(BasicBlock::iterator sottrazione , BasicBlock::iterator primaIstruzione , Value* var , const llvm::APInt costanteSub ){  
-
-    // Itera le istruzioni partendo dalla sottrazione e arriva fino all'inizio (primaIstruzione)               // TO-DO : migliorare ciclo
-    BasicBlock::iterator it = sottrazione;
-    ConstantInt* C0,*C1;
-    do{
-        if(it == primaIstruzione)
-            break;
-        it--;
-        
-        Instruction *sub = dyn_cast<Instruction>(var);
-        Instruction *instruction = &(*it);
-
-        //Controllo se il value dell'operazione che sto analizzando è uguale al value del sottrazione          //TO-DO : trovare un altro metodo per confrontare
-        if( sub->getOperand(0) == instruction->getOperand(0) && sub->getOperand(1) == instruction->getOperand(1)) {
-            outs()<<"Ho trovato un istruzione con il Value che è un buon candidato ( istr : "<<*instruction<<" )\n";
-            C0 = dyn_cast<ConstantInt>(instruction->getOperand(0));
-            C1 = dyn_cast<ConstantInt>(instruction->getOperand(1));
-            if ( C0 != NULL ){
-                const llvm::APInt costanteAdd = C0->getValue();
-                outs()<<"Costante trovata! : "<<costanteAdd<<"\n";
-                if(costanteAdd.eq(costanteSub)){
-                    outs()<<"Costante uguale a quella della sottrazione!\n";
-                    return instruction->getOperand(1);
-                }
-            }else if(C1 != NULL){
-                const llvm::APInt costanteAdd = C1->getValue();
-                outs()<<"Costante trovata! : "<<costanteAdd<<"\n";
-                if(costanteAdd.eq(costanteSub)){
-                    outs()<<"Costante uguale a quella della sottrazione! : \n";
-                    return instruction->getOperand(0);
-                }
-            }else{
-                outs()<<"Nessuna costante trovata!\n";
-            }
-        }
-    }while(true);
-
-
-    return NULL;
-
-}
-
-
-bool runOnBasicBlock(BasicBlock &B) {
-    
-    unsigned cont = 0;
-    std::vector<Instruction*> toDelete;  
-    
-    //Itera tutte le istruzioni
-    for(auto iter_i = B.begin() ; iter_i != B.end() ; ++iter_i){
-        cont++;
-        Instruction &I = *iter_i;
-        
-        //Controllo se l'istruzione è una sottrazione
-        if(I.isBinaryOp() && I.getOpcode() == Instruction::Sub) {
-
-            BinaryOperator *sub = dyn_cast<BinaryOperator>(&I);
-            outs()<<"("<<*sub<<")" <<" è una sottrazione\n";
-            
-            Value *op_0 = sub->getOperand(0);
-            Value *op_1 = sub->getOperand(1);
-
-            ConstantInt *C;
-            Value *variabile;
-            if( (C = dyn_cast<ConstantInt>(op_1)) ) {
-                variabile = op_0;
-            }else if( (C = dyn_cast<ConstantInt>(op_0)) ){
-                variabile = op_1;
-            }
-            
-            //Controllo se ho trovato una costante
-            if(C){
-                const llvm::APInt costanteIntera = C->getValue();
-                Value* new_value = findOperator(iter_i , B.begin() , variabile , costanteIntera);
-                if(new_value){  // Controllo se ho trovato un addizione con le caratteristiche desiderate
-                    outs() << "Nuovo valore che devo mettere  c = ... <----- = {"<<*new_value<<"} \n";
-                    I.replaceAllUsesWith(new_value);
-                    toDelete.push_back(&I);
-                }else{
-                    outs()<< "Non ho trovato nessuna <Add> con le caratteristiche adatte!\n";
-                }
-                
-            }else{
-                outs()<<"La seguente sottrazione NON ha una costante intera\n\n";
-            }
-        }
-        outs()<<"\n\n";
-        
-    }
-
-
-    //Cancellazione di tutte le istruzioni inutili
-    for (auto& element : toDelete) {
-        outs()<<"Cancello la seguente istruzione : "<<*element<<"\n";
-        element->eraseFromParent();
-    }
-
-
-    //Debug
-    outs() << "\nIstruzioni analizzate : "<<cont<<"\n";
-    return true;
-
-}
-
-bool runOnFunction(Function &F) {
-    bool Transformed = false;
-
-    for (auto Iter = F.begin(); Iter != F.end(); ++Iter) {
-        if (runOnBasicBlock(*Iter)) {
-            Transformed = true;
-        }
-    }
-
-    return Transformed;
-}
-
-
-PreservedAnalyses LocalOpts::run(Module &M,
-                                      ModuleAnalysisManager &AM) {
-    for (auto Fiter = M.begin(); Fiter != M.end(); ++Fiter)
-        if (runOnFunction(*Fiter))
-            return PreservedAnalyses::none();
-    return PreservedAnalyses::all();
+```llvm
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
+  %b = add nsw i32 1, 1
+  %a = add nsw i32 %b, 1
+  ----------------------    ; rimossa l'istruzione
+  %3 = mul nsw i32 %b, 4    ; sostituito %c con %b
+  %4 = add nsw i32 %b, 3    ; sostituito %c con %b
+  ret i32 %4
 }
 ```
 
+## Summary ( all optimizations in one IR code)
+
+_IR iniziale:_
+
+```llvm
+define dso_local i32 @foo(i32 noundef %0 ,i32 noundef %1 ) #0 {
+  %b = add nsw i32 1  , 1
+  %a = add nsw i32 %b , 1
+  %c = sub nsw i32 %a , 1      ;sottrazione candidata
+  %d = mul nsw i32 %c , 4
+  %e = add nsw i32 %c , 3
+  %3 = add nsw i32 %1, 0      ;identità algebrica n + 0
+  %4 = mul nsw i32 %3, 2
+  %5 = shl i32 %0, 1
+  %6 = sdiv i32 %5, 4
+  %7 = mul nsw i32 %4, 1     ;identità algebrica  n * 1
+  %8 = add nsw i32 %7, %6
+  %9 = add nsw i32 %8, 4
+  %10 = add nsw i32 %1, %9
+  %11 = mul nsw i32 %0, 8       ;moltiplicazione per multiplo
+  %12 = add nsw i32 %11, 1
+  %13 = udiv i32 %11, 32    ;divisione per multiplo
+  %14 = add nsw i32 %4, 1
+  %15 = mul i32 15, %0          ;moltiplicazione per multiplo adiacente
+
+  ret  i32 %15
+}
+```
+
+_IR dopo l'ottimizazione:_
+
+```llvm
+
+; ModuleID = 'basic_sr.bc'
+source_filename = "TEST/basic_sr.ll"
+
+define dso_local i32 @foo(i32 noundef %0, i32 noundef %1) {
+  %b = add nsw i32 1, 1
+  %a = add nsw i32 %b, 1
+  %3 = shl i32 %b, 2
+  %e = add nsw i32 %b, 3
+  %4 = shl i32 %1, 1
+  %5 = shl i32 %0, 1
+  %6 = sdiv i32 %5, 4
+  %7 = add nsw i32 %4, %6
+  %8 = add nsw i32 %7, 4
+  %9 = add nsw i32 %1, %8
+  %10 = shl i32 %0, 3
+  %11 = add nsw i32 %10, 1
+  %12 = lshr i32 %10, 5
+  %13 = add nsw i32 %4, 1
+  %14 = shl i32 %0, 4
+  %15 = sub i32 %14, %0
+  ret i32 %15
+}
+```
