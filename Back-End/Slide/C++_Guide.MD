@@ -25,11 +25,12 @@ int main() {
 ```
 
 *Grafic explanation- Step1:*  
-![step1](/Back-End/Slide/img/Step1.png)
+<img src="img/Step1.png" width=15% alt="img"></img>
+
 
 *Grafic explanation- Step2:*  
-![step2](/Back-End/Slide/img/Step2.png)
+<img src="img/Step2.png" width=15% alt="img"></img>
 
 *Grafic explanation- Step3:*  
-![step3](/Back-End/Slide/img/Step3.png)
+<img src="img/Step3.png" width=15% alt="img"></img>
 
