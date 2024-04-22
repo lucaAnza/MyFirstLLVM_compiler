@@ -14,6 +14,10 @@ flowchart TD
     Instruction
 ```
 
+· Ricorda il seguente concetto (UD-DU):
+
+... Insert img!!!
+
 · Ricordati che:
 
 - *Foo-optimized.bc* è il file binario generato
