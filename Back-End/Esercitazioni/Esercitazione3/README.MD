@@ -16,7 +16,11 @@ flowchart TD
 
 · Ricorda il seguente concetto (UD-DU):
 
-... Insert img!!!
+*UD CHAIN: Use -> Definition*  
+<img src="img/UD_chain.png" alt="UD" width=25%></img>
+
+*DU CHAIN: Definition -> Uses*  
+<img src="img/DU_chain.png" alt="DU" width=25%></img>  
 
 · Ricordati che:
 

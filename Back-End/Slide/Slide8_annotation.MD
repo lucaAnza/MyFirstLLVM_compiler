@@ -2,8 +2,13 @@
 
 
 
+## UD chain vs DU chain
 
 
-## DU chain vs UD chain
+*UD CHAIN: Use -> Definition*  
+<img src="img/UD_chain.png" alt="UD" width=30%></img>
 
-... Insert img
+*DU CHAIN: Definition -> Uses*  
+<img src="img/DU_chain.png" alt="DU" width=30%></img>  
+
+
