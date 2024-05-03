@@ -118,12 +118,22 @@ PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStanda
 
 10.Vai in `/LLVM/BUILD/` e manda il comando `make opt` e successivamente `make install`
 
-11.Andare in `/LLVM` e mandare il comando source `setup.sh`
+⚠ Attenzione ⚠
 
-12.Andare nella directory `LLVM/` e poi mandare il comando:
+Per generare il file Loop1.ll si sono eseguiti i seguenti step:
 
-`INSTALL/bin/opt -p loop_pass TEST/Foo.ll -o Foo-optimized.bc`  
-`INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll`
+1. Creato un file .c che contenesse un loop
+2. Lanciare il seguente comando `INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/Loop1.c -o Loop1.ll`
+3. Commentare (add `;`) nel file Loop1.ll la seguente riga : `attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "m...`
+
+
+11.Andare nella directory `LLVM/` e poi mandare il comando:
+
+`INSTALL/bin/opt -p loop_pass TEST/Loop1.ll -o Loop1-optimazed.bc`  
+`INSTALL/bin/llvm-dis Loop1-optimazed.bc -o Assignment_optimazed.ll`
+
+
+
 
 
 
