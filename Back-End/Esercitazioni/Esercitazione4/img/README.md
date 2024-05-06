@@ -70,7 +70,7 @@ for (Loop::block_iterator BI = L->block_begin(); BI != L->block_end(); ++BI);
 
 
 namespace llvm {
-    class LoopPass : public PassInfoMixin<LoopPass> {
+    class LoopPasses : public PassInfoMixin<LoopPasses> {
         public:
         PreservedAnalyses run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU);
     };
@@ -95,9 +95,16 @@ namespace llvm {
 
 using namespace llvm;
 
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
 PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU){
-  
-    for (Loop::block_iterator BI = L->block_begin(); BI != L->block_end(); ++BI){
+
+    outs() << "Starting loop programm: \n\n";
+
+    for (Loop::block_iterator BI = L.block_begin(); BI != L.block_end(); ++BI){
         outs()<<"Loop : "<<*BI<<"\n";
     }
   
@@ -106,7 +113,7 @@ PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStanda
 
 ```
 
-5.vai nella directory  ` /LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/llvm/Transforms/Utils/ `
+5.vai nella directory  ` /LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/ `
 
 6.Modifichi il file CMakeList.txt e aggiungi il nome "LoopPasses.cpp" mettilo in ordine alfabetico.
 
