@@ -1,0 +1,34 @@
+#Esercitazione-1
+
+INSTALL/bin/opt -passes=testpass TEST/Loop.ll -disable-output
+
+make opt  (/BUILD)
+make install (/BUILD)
+
+#Esercitazione-2
+
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p localopts TEST/Foo.ll -o Foo-optimized.bc
+INSTALL/bin/llvm-dis Foo-optimized.bc -o Foo.optimized.ll
+
+#Assignment-1
+
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p localopts TEST/Assignment.ll -o Foo-optimized.bc
+INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
+
+#Esercitazione 4 (Loop)
+
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p loop_pass TEST/Loop1.ll -o Foo-optimized.bc
+INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
+
+#Assigment-2 (Loop)
+
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p loop_pass TEST/LICM.ll -o LICM.bc
+INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
