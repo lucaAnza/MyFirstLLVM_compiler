@@ -30,5 +30,5 @@ INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
 
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_pass TEST/LICM.ll -o LICM.bc
+INSTALL/bin/opt -p loop_pass TEST/LICM.ll -disable-output 
 INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
