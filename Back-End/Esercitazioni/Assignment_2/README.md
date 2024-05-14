@@ -62,12 +62,7 @@ flowchart TD
     using namespace llvm;
 
 
-    // %d = %s1 + %s2 -> isLoopInvariant of %s1  and isLoopInvariant of %s2
-
-    bool is_loop_invariant(Value *Operand){  //Not sure of the parameter
-        
-    }
-
+    // Verifica se un istruzione è stata definita esternamente.
     bool is_define_outside(Value *Operand , Loop &L){
         Instruction* I_temp = dyn_cast<Instruction>(Operand);
         if(I_temp != NULL){
@@ -90,19 +85,16 @@ flowchart TD
 
         outs() << "Starting loop programm: \n\n";
 
-        std::vector<Instruction*> loop_invariant_instructions;
+        std::set<Instruction*> loop_invariant_instructions;
 
         if(!L.isLoopSimplifyForm()){
         outs()<<"\n il Loop non è in forma normale \n" ;
             return PreservedAnalyses::all();
         }
-
-        
         outs()<<"\n Il loop è in forma Normale si può continuare nell'ottimizazione... \n";
-        BasicBlock *head = L.getHeader();
 
-        //recuperiamo l'handle alla funzione che contiene il Loop
-        Function *F = head->getParent();
+        BasicBlock *head = L.getHeader();
+        Function *F = head->getParent(); //recuperiamo l'handle alla funzione che contiene il Loop
 
         //stampo il CFG
         outs()<<"-----CFG------ \n";
@@ -112,14 +104,11 @@ flowchart TD
             BasicBlock &BB = *iter;
             outs()<<BB<<"\n";
         }
-
         outs()<<"---- fine ----- ";
-
 
         //Stampo il Loop
         outs()<<"\n\n---- IL LOOP ------ \n";
         cont=0;
-
 
         // TODO -> provare a rendere questo ciclo for nella modalità for(auto &B : L)...
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
@@ -130,7 +119,7 @@ flowchart TD
             
             for (auto &I : BB) {
                 outs()<<"Analisi dell'istruzione : "<<I<<" : \n";
-                bool isOk=true;
+                bool isLoopInvariant=true;
                 for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
                     Value *Operand = *Iter;
                     
@@ -139,33 +128,50 @@ flowchart TD
                     }else if(is_define_outside(Operand,L)){
                         outs()<<"è definita esternamente\n";
                     }else{
-                        // TODO fare check se l'istruzione contente questo Value è loop_invariant o meno. In tal caso isOk rimane inviariato
-                        isOk = false;  
+                        Instruction* I_link = dyn_cast<Instruction>(Operand);
                         outs()<<"è definita internamente\n";
+                        if(I_link == NULL || !(loop_invariant_instructions.count(I_link) > 0) )
+                            isLoopInvariant = false;  
                     }
                 }
-                if(isOk == true){
-                    loop_invariant_instructions.push_back(&I);
+                if(isLoopInvariant == true){
+                    loop_invariant_instructions.insert(&I);
                 }
             }
         }
 
 
         outs()<<"Loop invariant instructions : \n";
-        for(int i=0 ; i<loop_invariant_instructions.size() ; i++){
-            outs()<<*loop_invariant_instructions[i]<<"\n";
+        for (const auto& element : loop_invariant_instructions) {
+            outs()<<*element<<"\n";
         }
 
         return PreservedAnalyses::all();
     }
-
+    
     ```
 
 5. Cambiare il codice di <b> LoopPasses.h </b>
 
-```c++
-//TODO -> Copiare qui dal sorgente su LLVM
-```
+    ```c++
+    #ifndef LLVM_TRANSFORMS_LOOPPASSES_H
+    #define LLVM_TRANSFORMS_LOOPPASSES_H
+
+    #include "llvm/IR/PassManager.h"
+    #include "llvm/Transforms/Scalar/LoopPassManager.h"
+
+
+    namespace llvm {
+        class LoopPasses : public PassInfoMixin<LoopPasses> {
+            public:
+            PreservedAnalyses run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU);
+        };
+    } // namespace llvm
+
+
+    #endif // LLVM_TRANSFORMS_TESTPASS _H
+
+    ```
 
 
 
