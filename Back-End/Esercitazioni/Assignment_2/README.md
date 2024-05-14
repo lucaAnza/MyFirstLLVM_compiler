@@ -14,17 +14,24 @@ flowchart TD
     Instruction
 ```
 
-· Ricordati che:
 
-- *Foo-optimized.bc* è il file binario generato
-- *Loop.ll* è il file(IR) che stiamo ottimizando
+---
 
-· Ricordati che per compilare:
+### Control Flow Graph of .ll code (No mem2reg opt)
 
-- `make opt (/BUILD)`
-- `make -j16 install (/BUILD)`
-- `INSTALL/bin/opt -p localopts TEST/Foo.ll -o Foo-optimized.bc`
+<img src="img/LICM_no_mem2reg.png" alt="DU" width=70%></img>  
 
+<br><br>
+
+---
+
+### Control Flow Graph of .ll code (with mem2reg opt)
+
+<br>
+
+<img src="img/LICM_mem2reg.png" alt="DU" width=70%></img>
+
+<br><br><br>
 
 ## Consegna
 
@@ -63,7 +70,7 @@ flowchart TD
 
 
     // Verifica se un istruzione è stata definita esternamente.
-    bool is_define_outside(Value *Operand , Loop &L){
+    bool isDefineOutside(Value *Operand , Loop &L){
         Instruction* I_temp = dyn_cast<Instruction>(Operand);
         if(I_temp != NULL){
             return (L.contains(I_temp->getParent()));
@@ -73,13 +80,22 @@ flowchart TD
     }
 
     // Verifica se un operando è una costante.
-    bool is_costant(Value *Operand){
+    bool isCostant(Value *Operand){
         if (ConstantInt *C = dyn_cast<ConstantInt>(Operand)) {
             return true;
         }else{
             return false;
         }
     }
+
+    // Verifica se un operando è valido per rendere l'istruzione Loop Invariant
+    bool isLoopInvariantCandidate(Value *Operand , Loop &L , std::set<Instruction*> loop_invariant_instructions){
+        Instruction* I_link = dyn_cast<Instruction>(Operand);
+        return( isCostant(Operand) || isDefineOutside(Operand,L) || I_link != NULL || (loop_invariant_instructions.count(I_link) > 0) );
+    }
+
+
+
 
     PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU){
 
@@ -113,41 +129,46 @@ flowchart TD
         // TODO -> provare a rendere questo ciclo for nella modalità for(auto &B : L)...
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
             
-            outs()<<"Basic Block("<<cont++<<") : " << "\n" ;
-            BasicBlock &BB = **BI;    
+            BasicBlock &BB = **BI;  
+            outs()"---------------------------------------\n";  
             outs()<<BB << "\n" ;
             
             for (auto &I : BB) {
                 outs()<<"Analisi dell'istruzione : "<<I<<" : \n";
                 bool isLoopInvariant=true;
-                for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
-                    Value *Operand = *Iter;
-                    
-                    if(is_costant(Operand)){
-                        outs()<<"è costante!\n";
-                    }else if(is_define_outside(Operand,L)){
-                        outs()<<"è definita esternamente\n";
-                    }else{
-                        Instruction* I_link = dyn_cast<Instruction>(Operand);
-                        outs()<<"è definita internamente\n";
-                        if(I_link == NULL || !(loop_invariant_instructions.count(I_link) > 0) )
-                            isLoopInvariant = false;  
+                PHINode* phi_node = dyn_cast<PHINode>(&I);
+                
+                //Check if is phi_instruction
+                if(phi_node){
+                    isLoopInvariant = false;
+                }else{
+                    for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
+                        Value *Operand = *Iter;
+                        outs()<<"op : "<<*Operand<<"\n";
+                        if(! isLoopInvariantCandidate(Operand , L , loop_invariant_instructions))
+                            isLoopInvariant = false;
                     }
                 }
+
                 if(isLoopInvariant == true){
                     loop_invariant_instructions.insert(&I);
                 }
             }
+
+            outs()"---------------------------------------\n\n\n\n";  
         }
 
 
-        outs()<<"Loop invariant instructions : \n";
+        outs()<<"\n\nLoop invariant instructions : \n";
         for (const auto& element : loop_invariant_instructions) {
             outs()<<*element<<"\n";
         }
 
         return PreservedAnalyses::all();
     }
+
+
+
     
     ```
 
