@@ -60,7 +60,6 @@ flowchart TD
 4. Cambiare il codice di <b> LoopPasses.cpp </b>
 
     ```c++
-
     #include "llvm/Transforms/Utils/LoopPasses.h"
     #include "llvm/IR/Instructions.h"
     #include "llvm/IR/InstrTypes.h"
@@ -91,7 +90,11 @@ flowchart TD
     // Verifica se un operando è valido per rendere l'istruzione Loop Invariant
     bool isLoopInvariantCandidate(Value *Operand , Loop &L , std::set<Instruction*> loop_invariant_instructions){
         Instruction* I_link = dyn_cast<Instruction>(Operand);
-        return( isCostant(Operand) || isDefineOutside(Operand,L) || I_link != NULL || (loop_invariant_instructions.count(I_link) > 0) );
+        return( isCostant(Operand) || 
+                isDefineOutside(Operand,L) || 
+                I_link != NULL || 
+                (loop_invariant_instructions.count(I_link) > 0) || 
+                (isa<Argument>(Operand))  );
     }
 
 
@@ -127,7 +130,7 @@ flowchart TD
         //Stampo il Loop
         outs()<<"\n\n---- IL LOOP ------ \n";
         cont=0;
-
+        
         // TODO -> provare a rendere questo ciclo for nella modalità for(auto &B : L)...
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
             
@@ -149,6 +152,8 @@ flowchart TD
                     for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
                         Value *Operand = *Iter;
                         outs()<<"op : "<<*Operand<<"\n";
+                        
+                    
                         if(! isLoopInvariantCandidate(Operand , L , loop_invariant_instructions))
                             isLoopInvariant = false;
                     }
@@ -171,6 +176,8 @@ flowchart TD
 
         return PreservedAnalyses::all();
     }
+
+
     
     ```
 
@@ -199,7 +206,11 @@ flowchart TD
 
 
 
+## TODO
 
+1. Creazione del Dominator Tree
+2. Creazione del BasicBlock "PREHEADER" e aggiungerlo prima del primo BB del LOOP.
+3. Spostare Code Motion Istrucion nel "PREHEADER".
 
 
 
