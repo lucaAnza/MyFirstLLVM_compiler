@@ -1,6 +1,9 @@
 # How to install LLVM last version ? 
 
-### 1. Scarica zip -> https://github.com/llvm/llvm-project/releases/tag/llvmorg-17.0.6  
+### 1. Scarica zip -> https://github.com/llvm/llvm-project/releases/tag/llvmorg-17.0.6
+
+- Scaricare <b> Source Code </b> (.zip / .tar.gz)
+
 ### 2. Creare una gerarchia di cartelle fatte in questo modo :   
 
     ./  
@@ -19,7 +22,7 @@
 `export ROOT=<directory desiderata>`     
 
 -- Example :  
-`export ROOT=/media/luke/data/MyFirstLLVM_compiler/Back-End/LLVM` )
+`export ROOT=/media/luke/data/MyFirstLLVM_compiler/Back-End/LLVM` 
 
 
 ### 6. Manda il seguente comando :  

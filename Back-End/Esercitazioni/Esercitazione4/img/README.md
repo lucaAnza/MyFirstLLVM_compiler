@@ -55,75 +55,84 @@ for (Loop::block_iterator BI = L->block_begin(); BI != L->block_end(); ++BI);
 
 ## Steps
 
-0.Attenzione: <b>LoopPass</b> esiste già come nome.
+0. Attenzione: <b>LoopPass</b> esiste già come nome.
 
-1.vai nella directory `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/include/llvm/Transforms/Utils/`
+1. vai nella directory `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/include/llvm/Transforms/Utils/`
 
-2.Aggiungi il file **LoopPasses.h**
+2. Aggiungi il file **LoopPasses.h**
 
-```c++
-#ifndef LLVM_TRANSFORMS_LOOPPASSES_H
-#define LLVM_TRANSFORMS_LOOPPASSES_H
+    ```c++
+    #ifndef LLVM_TRANSFORMS_LOOPPASSES_H
+    #define LLVM_TRANSFORMS_LOOPPASSES_H
 
-#include "llvm/IR/PassManager.h"
-#include "llvm/Transforms/Scalar/LoopPassManager.h"
-
-
-namespace llvm {
-    class LoopPasses : public PassInfoMixin<LoopPasses> {
-        public:
-        PreservedAnalyses run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU);
-    };
-} // namespace llvm
+    #include "llvm/IR/PassManager.h"
+    #include "llvm/Transforms/Scalar/LoopPassManager.h"
 
 
-#endif // LLVM_TRANSFORMS_TESTPASS _H
+    namespace llvm {
+        class LoopPasses : public PassInfoMixin<LoopPasses> {
+            public:
+            PreservedAnalyses run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU);
+        };
+    } // namespace llvm
 
 
-```
-
-3.vai nella directory `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/llvm/Transforms/Utils/`
-
-4.Aggiungi il file **LoopPasses.cpp**
-
-```c++
-#include "llvm/Transforms/Utils/LoopPasses.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/InstrTypes.h"
-#include <llvm/IR/Constants.h>
+    #endif // LLVM_TRANSFORMS_TESTPASS _H
 
 
-using namespace llvm;
+    ```
+
+<br>
+
+3. vai nella directory `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/`
+   
+<br>
+
+4. Aggiungi il file **LoopPasses.cpp**
+
+    ```c++
+    #include "llvm/Transforms/Utils/LoopPasses.h"
+    #include "llvm/IR/Instructions.h"
+    #include "llvm/IR/InstrTypes.h"
+    #include <llvm/IR/Constants.h>
 
 
-#include <stdio.h>
-#include <stdlib.h>
+    using namespace llvm;
 
 
-PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU){
+    #include <stdio.h>
+    #include <stdlib.h>
 
-    outs() << "Starting loop programm: \n\n";
 
-    for (Loop::block_iterator BI = L.block_begin(); BI != L.block_end(); ++BI){
-        outs()<<"Loop : "<<*BI<<"\n";
+    PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM , LoopStandardAnalysisResults &LAR, LPMUpdater &LU){
+
+        outs() << "Starting loop programm: \n\n";
+
+        for (Loop::block_iterator BI = L.block_begin(); BI != L.block_end(); ++BI){
+            outs()<<"Loop : "<<*BI<<"\n";
+        }
+    
+        return PreservedAnalyses::all();
     }
-  
-    return PreservedAnalyses::all();
-}
 
-```
+    ```
+<br>
 
-5.vai nella directory  ` /LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/ `
+5. vai nella directory  ` /LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/ `
 
-6.Modifichi il file CMakeList.txt e aggiungi il nome "LoopPasses.cpp" mettilo in ordine alfabetico.
+    1. Modifichi il file CMakeList.txt e aggiungi il nome "LoopPasses.cpp" mettilo in ordine alfabetico.
 
-7.vai nella directory  `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Passes/PassRegistry.def`
+<br>
 
-8.Aggiungi questa riga `LOOP_PASS("loop_pass", LoopPasses())` al file **PassRegistry.def**
+6. vai nella directory  `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Passes/PassRegistry.def`
 
-9.Aggiungi questa riga `#include "llvm/Transforms/Utils/LoopPasses.h"` al file **PassBuilder.cpp**
+    1. Aggiungi questa riga `LOOP_PASS("loop_pass", LoopPasses())` al file **PassRegistry.def**
 
-10.Vai in `/LLVM/BUILD/` e manda il comando `make opt` e successivamente `make install`
+    2. Aggiungi questa riga `#include "llvm/Transforms/Utils/LoopPasses.h"` al file **PassBuilder.cpp**
+
+<br>
+
+7. Vai in `/LLVM/BUILD/` e manda il comando `make opt` e successivamente `make install`
 
 ⚠ Attenzione ⚠
 
@@ -134,7 +143,7 @@ Per generare il file Loop1.ll si sono eseguiti i seguenti step:
 3. Commentare (add `;`) nel file Loop1.ll la seguente riga : `attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "m...`
 
 
-11.Andare nella directory `LLVM/` e poi mandare il comando:
+8. Andare nella directory `LLVM/` e poi mandare il comando:
 
 `INSTALL/bin/opt -p loop_pass TEST/Loop1.ll -o Loop1-optimazed.bc`  
 `INSTALL/bin/llvm-dis Loop1-optimazed.bc -o Assignment_optimazed.ll`
