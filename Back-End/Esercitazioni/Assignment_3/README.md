@@ -184,8 +184,8 @@ flowchart TD
         for (const auto& exit_iterator : loop_exits) {
             BasicBlock* Exit_BB = dyn_cast<BasicBlock>(exit_iterator);
             
-            for (auto& element : loop_invariant_instructions) {
-                Instruction* I = dyn_cast<Instruction>(element);
+            for (auto it = loop_invariant_instructions.begin(); it != loop_invariant_instructions.end();) {
+                Instruction* I = *it;
                 BasicBlock* BB = I->getParent();
                 
                 bool isDominated = DT.dominates(BB, Exit_BB);  // BB Domina Exit_BB
@@ -193,13 +193,12 @@ flowchart TD
                     outs()<<*I<<" fa parte di un BasicBlock che domina l'uscita "<<*Exit_BB<<"\n";
                 }else{
                     outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
-                    //loop_invariant_instructions.erase(I);
+                    it = loop_invariant_instructions.erase(it);
                 }
+                ++it;
             } 
-            
-        }
-        
 
+        }
 
         //Lists of Loop Invariant Instructions
         outs()<<"\n\nLoop invariant instructions : \n";
