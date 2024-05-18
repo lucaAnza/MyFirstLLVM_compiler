@@ -132,7 +132,7 @@ flowchart TD
         //Print of the loop
         outs()<<"\n\n---- IL LOOP ------ \n";
         
-        //Find all loop Invariant Instructions
+        //Find exit of the loop and find some candidate loop_invariant
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
             
             BasicBlock &BB = **BI;
@@ -155,9 +155,8 @@ flowchart TD
                         Value *Operand = *Iter;
                         outs()<<"op_branch : "<<*Operand<<"\n";
                         BasicBlock *BB_temp = dyn_cast<BasicBlock>(Operand);
-                        if (BB_temp) {
-                            outs()<<"TODO";
-                            //TODO -> Fare in modo che se il BasicBlock non è all'interno del Loop. Si aggiunge al set  std::set<BasicBlock*> loop_exits;
+                        if (BB_temp && !L.contains(BB_temp)) {
+                            loop_exits.insert(BB_temp);
                         } 
                     }
                 }else{
@@ -177,14 +176,40 @@ flowchart TD
             outs()<<"\n\n";
         }
 
-
         //Creation of Dominance Tree
         DominatorTree &DT = LAR.DT;
         BasicBlock *BB = (DT.getRootNode())->getBlock();
 
+        //Find loop invariant instructions
+        for (const auto& exit_iterator : loop_exits) {
+            BasicBlock* Exit_BB = dyn_cast<BasicBlock>(exit_iterator);
+            
+            for (auto& element : loop_invariant_instructions) {
+                Instruction* I = dyn_cast<Instruction>(element);
+                BasicBlock* BB = I->getParent();
+                
+                bool isDominated = DT.dominates(BB, Exit_BB);  // BB Domina Exit_BB
+                if(isDominated){
+                    outs()<<*I<<" fa parte di un BasicBlock che domina l'uscita "<<*Exit_BB<<"\n";
+                }else{
+                    outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
+                    //loop_invariant_instructions.erase(I);
+                }
+            } 
+            
+        }
+        
 
+
+        //Lists of Loop Invariant Instructions
         outs()<<"\n\nLoop invariant instructions : \n";
         for (const auto& element : loop_invariant_instructions) {
+            outs()<<*element<<"\n";
+        }   
+
+        //Lists of Exits BasicBlocks
+        outs()<<"\n\nExits BasicBlocks : \n";
+        for (const auto& element : loop_exits) {
             outs()<<*element<<"\n";
         }
 
