@@ -64,6 +64,8 @@ flowchart TD
     #include "llvm/IR/Instructions.h"
     #include "llvm/IR/InstrTypes.h"
     #include <llvm/IR/Constants.h>
+    #include "llvm/IR/Dominators.h"
+
 
     using namespace llvm;
 
@@ -105,6 +107,7 @@ flowchart TD
         outs() << "Starting loop programm: \n\n";
 
         std::set<Instruction*> loop_invariant_instructions;
+        std::set<BasicBlock*> loop_exits;
 
         if(!L.isLoopSimplifyForm()){
         outs()<<"\n il Loop non è in forma normale \n" ;
@@ -113,11 +116,10 @@ flowchart TD
         outs()<<"\n Il loop è in forma Normale si può continuare nell'ottimizazione... \n";
 
         BasicBlock *head = L.getHeader();
-        Function *F = head->getParent(); //recuperiamo l'handle alla funzione che contiene il Loop
+        Function *F = head->getParent(); 
 
         //stampo il CFG
         outs()<<"-----CFG------\n\n";
-        int cont=0;
         for(auto iter = F->begin() ; iter != F->end() ;++iter){
             
             BasicBlock &BB = *iter;
@@ -125,13 +127,12 @@ flowchart TD
             outs()<<BB<<"\n";
             outs()<<"---------------------------------------\n \n\n"; 
         }
-        outs()<<"---- fine ----- ";
+        outs()<<"---- END ----- ";
 
-        //Stampo il Loop
+        //Print of the loop
         outs()<<"\n\n---- IL LOOP ------ \n";
-        cont=0;
         
-        // TODO -> provare a rendere questo ciclo for nella modalità for(auto &B : L)...
+        //Find all loop Invariant Instructions
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
             
             BasicBlock &BB = **BI;
@@ -139,34 +140,47 @@ flowchart TD
             outs()<<BB << "\n" ;
             outs()<<"---------------------------------------\n\n";  
             
-            
             for (auto &I : BB) {
-                outs()<<"Analisi dell'istruzione : "<<I<<" : \n";
+                outs()<<"Analysis of the instruction : "<<I<<" : \n";
                 bool isLoopInvariant=true;
                 PHINode* phi_node = dyn_cast<PHINode>(&I);
                 
                 //Check if is phi_instruction
                 if(phi_node){
                     isLoopInvariant = false;
+                //Chech if is branch_instruction
+                }else if (isa<BranchInst>(I)) {
+                    isLoopInvariant = false;
+                    for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
+                        Value *Operand = *Iter;
+                        outs()<<"op_branch : "<<*Operand<<"\n";
+                        BasicBlock *BB_temp = dyn_cast<BasicBlock>(Operand);
+                        if (BB_temp) {
+                            outs()<<"TODO";
+                            //TODO -> Fare in modo che se il BasicBlock non è all'interno del Loop. Si aggiunge al set  std::set<BasicBlock*> loop_exits;
+                        } 
+                    }
                 }else{
                     for (auto *Iter = I.op_begin(); Iter != I.op_end(); ++Iter) {
                         Value *Operand = *Iter;
                         outs()<<"op : "<<*Operand<<"\n";
-                        
-                    
-                        if(! isLoopInvariantCandidate(Operand , L , loop_invariant_instructions))
+                        //Check of the operand
+                        if(! isLoopInvariantCandidate(Operand , L , loop_invariant_instructions)){
                             isLoopInvariant = false;
+                        }
                     }
                 }
-
                 if(isLoopInvariant == true){
                     loop_invariant_instructions.insert(&I);
                 }
             }
-
             outs()<<"\n\n";
-
         }
+
+
+        //Creation of Dominance Tree
+        DominatorTree &DT = LAR.DT;
+        BasicBlock *BB = (DT.getRootNode())->getBlock();
 
 
         outs()<<"\n\nLoop invariant instructions : \n";
