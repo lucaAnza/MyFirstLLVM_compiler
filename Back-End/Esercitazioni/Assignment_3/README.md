@@ -17,7 +17,7 @@ flowchart TD
 
 ---
 
-### Control Flow Graph of .ll code (No mem2reg opt)
+### Control Flow Graph of .ll code (No mem2reg opt) --- [C style]
 
 <img src="img/LICM_no_mem2reg.png" alt="DU" width=70%></img>  
 
@@ -25,12 +25,18 @@ flowchart TD
 
 ---
 
-### Control Flow Graph of .ll code (with mem2reg opt)
+### Control Flow Graph of .ll code (with mem2reg opt) --- [C style]
 
 <br>
 
-<img src="img/LICM_mem2reg.png" alt="DU" width=70%></img>
+<img src="img/LICM_mem2reg.png" alt="DU" width=70%></img>   
+<br><br>
 
+### Control Flow Graph of .ll code (with mem2reg opt) --- [IR style]
+
+<br>
+
+<img src="img/LICM_mem2reg_IR.png" alt="DU" width=70%></img>   
 <br><br><br>
 
 ## Consegna
@@ -74,7 +80,7 @@ flowchart TD
     bool isDefineOutside(Value *Operand , Loop &L){
         Instruction* I_temp = dyn_cast<Instruction>(Operand);
         if(I_temp != NULL){
-            return (L.contains(I_temp->getParent()));
+            return !(L.contains(I_temp->getParent()));
         }else{
             return false;
         }
@@ -97,6 +103,99 @@ flowchart TD
                 I_link != NULL || 
                 (code_motions_candidates.count(I_link) > 0) || 
                 (isa<Argument>(Operand))  );
+    }
+
+    // Trova i blocchi di uscita del ciclo
+    std::set<BasicBlock *> find_exit_blocks(Loop &L)
+    {
+        std::set<BasicBlock *> exit_blocks;
+        for (BasicBlock *BB : L.blocks())
+        {
+            for (Instruction &I : *BB)
+            {
+                if (BranchInst *BI = dyn_cast<BranchInst>(&I))
+                {
+                    for (unsigned i = 0; i < BI->getNumSuccessors(); ++i)
+                    {
+                        BasicBlock *succ = BI->getSuccessor(i);
+                        if (!L.contains(succ))
+                        {
+                            exit_blocks.insert(succ);
+                        }
+                    }
+                }
+            }
+        }
+        return exit_blocks;
+    }
+
+    // Trova i blocchi che dominano TUTTE le uscite
+    std::set<BasicBlock *> find_exit_dominators(DominatorTree &DT, Loop &L)
+    {
+        std::set<BasicBlock *> exit_blocks = find_exit_blocks(L);
+        std::set<BasicBlock *> exit_dominators;
+
+        for (BasicBlock *BB : L.blocks())
+        {
+            bool dominates_all_exits = true;
+
+            for (BasicBlock *exitBlock : exit_blocks)
+            {
+                if (!DT.dominates(BB, exitBlock))
+                {
+                    dominates_all_exits = false;
+                    break;
+                }
+            }
+            if (dominates_all_exits)
+            {
+                exit_dominators.insert(BB);
+            }
+        }
+        return exit_dominators;
+    }
+
+    // Controlla se un'istruzione domina TUTTI i suoi usi
+    // TODO: NON può essere passata su un'istruzione che non sia binaria (?), aggiungi controlli
+    // Dubbio : Ma non dovresti controllare i blocchi anzichè gli usi?
+    bool instruction_dominates_all_uses(Instruction *I, DominatorTree &DT,
+                                        Loop &L)
+    {
+        for (User *U : I->users()){
+            Instruction *userInst = dyn_cast<Instruction>(U);
+            if (userInst && L.contains(userInst->getParent())){
+                if (!DT.dominates(I, userInst)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // TODO: check se non istruzione binaria
+    bool is_dead(Instruction *I, Loop &L){
+        for (User *U : I->users()){
+            Instruction *userInst = dyn_cast<Instruction>(U);
+            if (userInst && !L.contains(userInst->getParent())){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Sposta un set di istruzioni nel preheader
+    void move_to_preheader(Loop *L,
+                        std::set<Instruction *> &loop_invariant_instructions)
+    {
+        BasicBlock *preheader = L->getLoopPreheader();
+        Instruction *terminator = preheader->getTerminator();
+
+        for (Instruction *inst : loop_invariant_instructions)
+        {
+            inst->moveBefore(terminator);
+        }
+
+        outs() << "Moved Loop Invariant Instructions to preheader!\n";
     }
 
 
@@ -179,7 +278,7 @@ flowchart TD
         DominatorTree &DT = LAR.DT;
         BasicBlock *BB = (DT.getRootNode())->getBlock();
 
-        //Check if the block of every istructions dominates every loop exit
+        //Filter based on Domination of Exit BB, Domination of all Uses
         for (const auto& exit_iterator : loop_exits) {
             BasicBlock* Exit_BB = dyn_cast<BasicBlock>(exit_iterator);
             
@@ -188,7 +287,19 @@ flowchart TD
                 BasicBlock* BB = I->getParent();
                 
                 bool isDominated = DT.dominates(BB, Exit_BB);  // BB Domina Exit_BB
-                if(isDominated){
+                
+                //Dead Check
+                if(is_dead(I , L)){
+                    outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
+                    it = code_motions_candidates.erase(it);
+                }
+                //Domination of all Uses
+                else if(instruction_dominates_all_uses(I , DT , L)){
+                    outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
+                    it = code_motions_candidates.erase(it);
+                }
+                // Domination of Exit BB
+                else if(isDominated){     
                     outs()<<*I<<" fa parte di un BasicBlock che domina l'uscita "<<*Exit_BB<<"\n";
                 }else{
                     outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
@@ -197,15 +308,6 @@ flowchart TD
                 ++it;
             } 
         }
-
-        //Si trovano in blocchi che dominano tutti i blocchi nel loop che usano la variabile a cui si sta assegnando un valore.
-        for (const auto& element : code_motions_candidates) {
-            Instruction *I = dyn_cast<Instruction>(element);
-            BasicBlock* BB = I->getParent();
-            // Ottieni elenco BasicBlock che utilizzano la variabile e mettili dentro un set -> B_set
-            // Verifica se BB dominata tutti i blocchi dell'insieme B_set
-            // TODO
-        }   
 
         //Lists of Loop Code Motion Instructions
         outs()<<"\n\nLoop Code Motion instructions : \n";
@@ -218,6 +320,10 @@ flowchart TD
         for (const auto& element : loop_exits) {
             outs()<<*element<<"\n";
         }
+
+        //Move instruction to PREHEADER
+        //outs() << "\nAttempting to move instructions...\n";
+        //move_to_preheader(&L, code_motions_candidates);
 
         return PreservedAnalyses::all();
     }
