@@ -90,15 +90,14 @@ flowchart TD
     }
 
     // Verifica se un operando è valido per rendere l'istruzione Loop Invariant
-    bool isLoopInvariantCandidate(Value *Operand , Loop &L , std::set<Instruction*> loop_invariant_instructions){
+    bool isLoopInvariantCandidate(Value *Operand , Loop &L , std::set<Instruction*> code_motions_candidates){
         Instruction* I_link = dyn_cast<Instruction>(Operand);
         return( isCostant(Operand) || 
                 isDefineOutside(Operand,L) || 
                 I_link != NULL || 
-                (loop_invariant_instructions.count(I_link) > 0) || 
+                (code_motions_candidates.count(I_link) > 0) || 
                 (isa<Argument>(Operand))  );
     }
-
 
 
 
@@ -106,7 +105,7 @@ flowchart TD
 
         outs() << "Starting loop programm: \n\n";
 
-        std::set<Instruction*> loop_invariant_instructions;
+        std::set<Instruction*> code_motions_candidates;
         std::set<BasicBlock*> loop_exits;
 
         if(!L.isLoopSimplifyForm()){
@@ -132,7 +131,7 @@ flowchart TD
         //Print of the loop
         outs()<<"\n\n---- IL LOOP ------ \n";
         
-        //Find exit of the loop and find some candidate loop_invariant
+        //Find exit of the loop and loop invariant instructions
         for( auto BI = L.block_begin() ; BI != L.block_end(); ++BI){
             
             BasicBlock &BB = **BI;
@@ -164,13 +163,13 @@ flowchart TD
                         Value *Operand = *Iter;
                         outs()<<"op : "<<*Operand<<"\n";
                         //Check of the operand
-                        if(! isLoopInvariantCandidate(Operand , L , loop_invariant_instructions)){
+                        if(! isLoopInvariantCandidate(Operand , L , code_motions_candidates)){
                             isLoopInvariant = false;
                         }
                     }
                 }
                 if(isLoopInvariant == true){
-                    loop_invariant_instructions.insert(&I);
+                    code_motions_candidates.insert(&I);
                 }
             }
             outs()<<"\n\n";
@@ -180,11 +179,11 @@ flowchart TD
         DominatorTree &DT = LAR.DT;
         BasicBlock *BB = (DT.getRootNode())->getBlock();
 
-        //Find loop invariant instructions
+        //Check if the block of every istructions dominates every loop exit
         for (const auto& exit_iterator : loop_exits) {
             BasicBlock* Exit_BB = dyn_cast<BasicBlock>(exit_iterator);
             
-            for (auto it = loop_invariant_instructions.begin(); it != loop_invariant_instructions.end();) {
+            for (auto it = code_motions_candidates.begin(); it != code_motions_candidates.end();) {
                 Instruction* I = *it;
                 BasicBlock* BB = I->getParent();
                 
@@ -193,16 +192,24 @@ flowchart TD
                     outs()<<*I<<" fa parte di un BasicBlock che domina l'uscita "<<*Exit_BB<<"\n";
                 }else{
                     outs()<<*I<<" TO DELETE "<<*Exit_BB<<"\n";
-                    it = loop_invariant_instructions.erase(it);
+                    it = code_motions_candidates.erase(it);
                 }
                 ++it;
             } 
-
         }
 
-        //Lists of Loop Invariant Instructions
-        outs()<<"\n\nLoop invariant instructions : \n";
-        for (const auto& element : loop_invariant_instructions) {
+        //Si trovano in blocchi che dominano tutti i blocchi nel loop che usano la variabile a cui si sta assegnando un valore.
+        for (const auto& element : code_motions_candidates) {
+            Instruction *I = dyn_cast<Instruction>(element);
+            BasicBlock* BB = I->getParent();
+            // Ottieni elenco BasicBlock che utilizzano la variabile e mettili dentro un set -> B_set
+            // Verifica se BB dominata tutti i blocchi dell'insieme B_set
+            // TODO
+        }   
+
+        //Lists of Loop Code Motion Instructions
+        outs()<<"\n\nLoop Code Motion instructions : \n";
+        for (const auto& element : code_motions_candidates) {
             outs()<<*element<<"\n";
         }   
 
@@ -242,13 +249,6 @@ flowchart TD
     ```
 
 
-
-
-## TODO
-
-1. Creazione del Dominator Tree
-2. Creazione del BasicBlock "PREHEADER" e aggiungerlo prima del primo BB del LOOP.
-3. Spostare Code Motion Istrucion nel "PREHEADER".
 
 
 
