@@ -16,8 +16,8 @@ define dso_local void @foo(i32 noundef %0, i32 noundef %1) #0 {
   %.01 = phi i32 [ 9, %2 ], [ %.1, %17 ]    ; a = 9
   %.0 = phi i32 [ %1, %2 ], [ %4, %17 ]     ; z = input(f)
   %4 = add nsw i32 %.0, 1
-  %5 = add nsw i32 %0, 3
-  %6 = add nsw i32 %0, 7       ; q
+  %5 = add nsw i32 %0, 3       ; y = c + 3
+  %6 = add nsw i32 %0, 7       ; q = c + 7
   %7 = icmp slt i32 %4, 5
   br i1 %7, label %8, label %11
 
