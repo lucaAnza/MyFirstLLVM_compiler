@@ -1,4 +1,4 @@
-NAME="LoopPasses"
+NAME="LoopFusionPass"
 
 
 
@@ -11,7 +11,7 @@ touch SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/$NAME.cpp
 code SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/$NAME.cpp
 
 # Open usefull files
-echo "1. Add $NAME in CMakeLists.txt"
+echo "1. Add $NAME (.cpp)  in CMakeLists.txt"
 code SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Transforms/Utils/CMakeLists.txt
 
 echo -e "2. Add LOOP_PASS(\"loop_pass\", LoopPasses()) in PassRegistry.def"

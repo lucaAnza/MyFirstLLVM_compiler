@@ -26,9 +26,15 @@ make install (/BUILD)
 INSTALL/bin/opt -p loop_pass TEST/Loop1.ll -o Foo-optimized.bc
 INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
 
-#Assigment-2 (Loop)
+#Assigment-3 (Loop)
 
 make opt (/BUILD)
 make install (/BUILD)
 INSTALL/bin/opt -p loop_pass TEST/LICM.ll -disable-output 
 INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
+
+#Assignment-4 (Loop Fusion)
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p loop_fusion TEST/LF.ll -disable-output 
+INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll
