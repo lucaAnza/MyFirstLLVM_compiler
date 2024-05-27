@@ -1,31 +1,9 @@
-#include <stdio.h>
+void twoloops(int a[] , int b[] , int c[] , int d[] , int n){
+    int i;
 
-
-void execute2Loop(int **a, int **b , int **c , int **d , int N){
-
-    //Loop0
-    for(int i=0 ; i<N ; i++)
-        for(int j=0; j<N ; j++)
-            a[i][j] = 1/b[i][j] * c[i][j];
-    //Loop1
-    for(int i=0 ; i<N ; i++)
-        for(int j=0; j<N ; j++)
-            d[i][j] = a[i][j] * c[i][j];
-
-
-}
-
-int main() {
+    for(i=0 ; i<n ; i++)
+        a[i] = b[i] + c[i];
     
-    int N = 10;
-    int **a;
-    int **b;
-    int **c;
-    int **d;
-
-    execute2Loop(a , b , c , d , N);
-
-    return 0;
+    for(i=0 ; i<n ; i++)
+        d[i] = a[i] * a[i];
 }
-
-

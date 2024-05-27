@@ -14,9 +14,17 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
     SmallVector<Loop*, 8> Worklist;
 
     LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
+
         
     for (Loop *TopLevelLoop : LI){
         outs()<<"TopLevelLoop : "<<*TopLevelLoop<<"\n";
+
+        if (BasicBlock *ExitBlock = TopLevelLoop->getExitBlock()) {
+            outs() << "Next BasicBlock after TopLevelLoop: " << *ExitBlock << "\n";
+        } else {
+            outs() << "TopLevelLoop has multiple exit blocks.\n";
+        }
+
         for (Loop *L : depth_first(TopLevelLoop)){
             // We only handle inner-most loops.
             if (L->isInnermost())
