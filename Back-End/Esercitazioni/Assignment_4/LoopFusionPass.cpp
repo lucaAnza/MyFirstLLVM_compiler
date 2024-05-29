@@ -25,14 +25,19 @@ std::set<Loop*> getAllTopLevelLoops(LoopInfo &LI){
 /// @param l  loop pointer
 /// @param TopLevelLoops  set of loop candidate to the fusion
 /// @param LI  Loop Info struct
-void loopAdjentFilter(Loop *l , std::set<Loop*> LoopFusionCandidates , LoopInfo &LI){
+void loopAdjentANDControlFlowFilter(Loop *l , std::set<Loop*> LoopFusionCandidates , LoopInfo &LI , DominatorTree &DT){
+
+    //TODO - check if it is Guarded  //L->isGuarded();
 
     if (BasicBlock *ExitBlock = l->getExitBlock()) {
         //outs() << "Exit Block : " << *ExitBlock << "\n";
         BasicBlock *nextBB = ExitBlock->getTerminator()->getSuccessor(0);
         Loop *nextLoop = LI.getLoopFor(nextBB);
-        if (LoopFusionCandidates.find(nextLoop) != LoopFusionCandidates.end()) {
-            LoopFusionCandidates.erase(nextLoop);
+        //Check if the next BB is a Loop in the set
+        if (LoopFusionCandidates.find(nextLoop) == LoopFusionCandidates.end()) {
+            LoopFusionCandidates.erase(l);
+        //Check if L0 dominates L1
+        }else if(!DT.dominates(ExitBlock ,nextBB )){
             LoopFusionCandidates.erase(l);
         }
     } else {
@@ -43,7 +48,7 @@ void loopAdjentFilter(Loop *l , std::set<Loop*> LoopFusionCandidates , LoopInfo 
 
 PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) {
     
-    //L->isGuarded();
+    
     
     outs() << "Start loop fusion opt...\n";
     std::set<Loop*> LoopFusionCandidates;
@@ -51,12 +56,15 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
 
     LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
     LoopFusionCandidates = getAllTopLevelLoops(LI);
+    DominatorTree DT;
+    DT.recalculate(F); 
 
         
     for (Loop *TopLevelLoop : LI){
+        
         outs()<<"TopLevelLoop : "<<*TopLevelLoop<<"\n";
 
-        loopAdjentFilter(TopLevelLoop , LoopFusionCandidates , LI);
+        loopAdjentANDControlFlowFilter(TopLevelLoop , LoopFusionCandidates , LI , DT);
 
         /* Iterazione sui cicli annidati
         for (Loop *L : depth_first(TopLevelLoop)){
@@ -66,6 +74,13 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
         }
         */ 
     }
+
+    outs()<<"Candidates for the loop fusion : \n";
+    for(auto it = LoopFusionCandidates.begin() , end = LoopFusionCandidates.end() ; it != end ; it++ ){
+        Loop *l = *it;
+        outs()<<*l<<"\n";
+    }
+    
 
     return PreservedAnalyses::all();
 }
