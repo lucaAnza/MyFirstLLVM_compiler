@@ -25,16 +25,16 @@ std::set<Loop*> getAllTopLevelLoops(LoopInfo &LI){
 /// @param l  loop pointer
 /// @param TopLevelLoops  set of loop candidate to the fusion
 /// @param LI  Loop Info struct
-void loopAdjentANDControlFlowFilter(Loop *l , std::set<Loop*> LoopFusionCandidates , LoopInfo &LI , DominatorTree &DT){
+void loopAdjacentANDControlFlowFilter(Loop *l , std::set<Loop*> LoopFusionCandidates , LoopInfo &LI , DominatorTree &DT){
 
     //TODO - check if it is Guarded  //L->isGuarded();
 
     if (BasicBlock *ExitBlock = l->getExitBlock()) {
         //outs() << "Exit Block : " << *ExitBlock << "\n";
         BasicBlock *nextBB = ExitBlock->getTerminator()->getSuccessor(0);
-        Loop *nextLoop = LI.getLoopFor(nextBB);
+        Loop *preheaderL1 = LI.getLoopFor(nextBB);
         //Check if the next BB is a Loop in the set
-        if (LoopFusionCandidates.find(nextLoop) == LoopFusionCandidates.end()) {
+        if (LoopFusionCandidates.find(preheaderL1) == LoopFusionCandidates.end()) {
             LoopFusionCandidates.erase(l);
         //Check if L0 dominates L1
         }else if(!DT.dominates(ExitBlock ,nextBB )){
@@ -63,16 +63,9 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
     for (Loop *TopLevelLoop : LI){
         
         outs()<<"TopLevelLoop : "<<*TopLevelLoop<<"\n";
+        loopAdjacentANDControlFlowFilter(TopLevelLoop , LoopFusionCandidates , LI , DT);
 
-        loopAdjentANDControlFlowFilter(TopLevelLoop , LoopFusionCandidates , LI , DT);
-
-        /* Iterazione sui cicli annidati
-        for (Loop *L : depth_first(TopLevelLoop)){
-            // We only handle inner-most loops.
-            if (L->isInnermost())
-                LoopFusionCandidates.insert(L);
-        }
-        */ 
+         
     }
 
     outs()<<"Candidates for the loop fusion : \n";
@@ -84,3 +77,21 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
 
     return PreservedAnalyses::all();
 }
+
+
+
+
+
+
+
+
+
+
+
+/* Iterazione sui cicli annidati
+        for (Loop *L : depth_first(TopLevelLoop)){
+            // We only handle inner-most loops.
+            if (L->isInnermost())
+                LoopFusionCandidates.insert(L);
+        }
+        */

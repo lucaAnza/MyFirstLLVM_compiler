@@ -18,6 +18,8 @@
 
 1. Seguire lo step di inizializzazione del passo in <b>Esercitazione4</b>
 
+    - ⚠ Ricordati che questo assignment richiede un <b>FUNCTION_PASS</b>
+
 2. Generare il file .ll nel seguente modo:
 
     ```bash
