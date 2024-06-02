@@ -1,11 +1,9 @@
-int const N = 100;
-
-void twoloops(int a[] , int b[] , int c[] , int d[]){
+void twoloops(int a[] , int b[] , int c[] , int d[] , int n){
     int i;
 
-    for(i=0 ; i<N ; i++)
+    for(i=0 ; i<n ; i++)
         a[i] = b[i] + c[i];
     
-    for(i=0 ; i<N ; i++)
+    for(i=0 ; i<n ; i++)
         d[i] = a[i] * a[i];
 }
