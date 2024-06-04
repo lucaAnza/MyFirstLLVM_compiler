@@ -11,7 +11,7 @@
 
 ## Rappresentazione grafica del problema
 
-//TODO
+<img src="img/CFG_LF.png" alt="IR draw" width=40%></img>
 
 
 ## Steps
@@ -23,28 +23,15 @@
 2. Generare il file .ll nel seguente modo:
 
     ```bash
-    echo "Avvio scripting per creazione MEM2REG file"
     INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/Loop_fusion.c -o LF.ll -Xclang -disable-O0-optnone
+    # Eseguire mem2reg pass
     ```
 
 3. Commentare le righe che incominciano con `attributes #...`
 
-4. Cambiare il codice di <b> LoopFusionPass.cpp </b>
+4. Modificare i file <b>LoopFusionPass.cpp</b> e <b>LoopFusionPass.h</b>
 
-    ```c++
-    //TODO
-    ```
-<br>
-
-5. Cambiare il codice di <b> LoopFusionPass.h </b>
-
-    ```c++
-    //TODO
-    ```
-
-<br>
-
-6. Lanciare i seguenti comandi
+5. Lanciare i seguenti comandi:
 
     ```bash
     INSTALL/bin/opt -p loop_fusion TEST/LF.ll -o temp.bc

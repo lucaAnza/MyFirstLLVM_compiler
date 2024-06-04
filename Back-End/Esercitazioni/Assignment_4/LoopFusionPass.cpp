@@ -113,7 +113,7 @@ bool areControlFlowEquivalent(Loop *L0, Loop *L1, DominatorTree &DT, PostDominat
 }
 
 
-// Non funzionante, logicamente corretto.
+// Calcola se 2 loop ha lo stesso numero di iterazioni
 bool haveSameTripCount(Loop *L0, Loop *L1, ScalarEvolution &SE){
     const SCEV *S1 = SE.getBackedgeTakenCount(L0);
     const SCEV *S2 = SE.getBackedgeTakenCount(L1);
@@ -145,12 +145,22 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
 
     // Point 2 - Same number of iteration
     ScalarEvolution &SE = AM.getResult<ScalarEvolutionAnalysis>(F);
-        
+    
     for (Loop *TopLevelLoop : LI){
         outs()<<"TopLevelLoop : "<<*TopLevelLoop<<"\n"; 
+        const SCEV *S = SE.getBackedgeTakenCount(TopLevelLoop);
+        //llvm::raw_ostream &OS = llvm::outs();
+        //S->print(OS);
+        if (isa<SCEVCouldNotCompute>(S)) {
+            outs()<<"Il numero di iterazione non può essere calcolato!\n";
+            continue;
+        }else{
+            outs()<<"Il loop itera "<<*S<<" volte\n";
+        }
     }
 
     areControlFlowEquivalent(LoopFusionCandidates[1] , LoopFusionCandidates[0] , DT , PDT );
+    //haveSameTripCount(LoopFusionCandidates[0] , LoopFusionCandidates[1] , SE);
     
 
     return PreservedAnalyses::all();
@@ -165,26 +175,3 @@ PreservedAnalyses LoopFusionPass::run(Function &F, FunctionAnalysisManager &AM) 
 
 
 
-
-/* Iterazione sui cicli annidati
-        for (Loop *L : depth_first(TopLevelLoop)){
-            // We only handle inner-most loops.
-            if (L->isInnermost())
-                LoopFusionCandidates.insert(L);
-        }
-        */
-
-
-
-//TENTATIVO ITERAZIONI UGUALI
-
-/*
-const SCEV *S = SE.getBackedgeTakenCount(TopLevelLoop);
-        llvm::raw_ostream &OS = llvm::outs();
-        S->print(OS);
-        if (isa<SCEVCouldNotCompute>(S)) {
-            outs()<<"Il numero di iterazione non può essere calcolato!\n";
-            continue;
-        }else{
-            outs()<<"Il loop itera "<<*S<<" volte\n";
-        }*/

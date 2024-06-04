@@ -1,6 +1,15 @@
 # Creazione file .ll
 INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
 
+# Creazione CFG Draw
+BUILD/bin/opt -p=dot-cfg TEST/LF_simplified.ll -o TEST/dot.dot
+dot -Tpng grafo.dot -o grafo.png
+
+# Ottimizazione di tipo mem2reg
+INSTALL/bin/opt -p=mem2reg <input>.ll -o temp.bc 
+INSTALL/bin/llvm-dis temp.bc -o <output>.ll
+rm temp.bc
+
 #Esercitazione-1
 
 INSTALL/bin/opt -passes=testpass TEST/Loop.ll -disable-output
@@ -39,5 +48,5 @@ INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
 #Assignment-4 (Loop Fusion)
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_fusion TEST/LF.ll -disable-output 
+INSTALL/bin/opt -p loop_fusion TEST/LFm2r.ll -disable-output 
 INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll
