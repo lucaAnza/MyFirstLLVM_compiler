@@ -1,3 +1,6 @@
+----------------------------------------------------------------
+COMANDI UTILI
+----------------------------------------------------------------
 # Creazione file .ll
 INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
 
@@ -10,10 +13,13 @@ INSTALL/bin/opt -p=mem2reg <input>.ll -o temp.bc
 INSTALL/bin/llvm-dis temp.bc -o <output>.ll
 rm temp.bc
 
+----------------------------------------------------------------
+ESERCITAZIONI
+----------------------------------------------------------------
+
 #Esercitazione-1
 
 INSTALL/bin/opt -passes=testpass TEST/Loop.ll -disable-output
-
 make opt  (/BUILD)
 make install (/BUILD)
 
@@ -24,18 +30,22 @@ make install (/BUILD)
 INSTALL/bin/opt -p localopts TEST/Foo.ll -o Foo-optimized.bc
 INSTALL/bin/llvm-dis Foo-optimized.bc -o Foo.optimized.ll
 
-#Assignment-1
-
-make opt (/BUILD)
-make install (/BUILD)
-INSTALL/bin/opt -p localopts TEST/Assignment.ll -o Foo-optimized.bc
-INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
-
 #Esercitazione 4 (Loop)
 
 make opt (/BUILD)
 make install (/BUILD)
 INSTALL/bin/opt -p loop_pass TEST/Loop1.ll -o Foo-optimized.bc
+INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
+
+----------------------------------------------------------------
+ASSIGNMENTS
+----------------------------------------------------------------
+
+#Assignment-1
+
+make opt (/BUILD)
+make install (/BUILD)
+INSTALL/bin/opt -p local_opts TEST/Assignment.ll -o Foo-optimized.bc
 INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
 
 #Assigment-3 (Loop)
