@@ -45,8 +45,9 @@ ASSIGNMENTS
 
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p local_opts TEST/Assignment.ll -o Foo-optimized.bc
-INSTALL/bin/llvm-dis Foo-optimized.bc -o Assignment_optimazed.ll
+INSTALL/bin/opt -p local_opts TEST/source_ll/Assignment1/basic_sr.ll -o optimezed_temp.bc
+INSTALL/bin/llvm-dis optimezed_temp.bc -o Assignment1_opt.ll
+rm optimezed_temp.bc
 
 #Assigment-3 (Loop)
 
