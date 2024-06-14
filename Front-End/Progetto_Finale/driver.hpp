@@ -152,4 +152,19 @@ public:
   Function *codegen(driver& drv) override;
 };
 
+
+
+//////////////////////////////////
+// Classi aggiunte per il progetto
+//////////////////////////////////
+
+// Binding - Classe che rappresenta un binding (Ex: var x = 7)
+class Binding : public RootAST{
+    private:
+        std::string type;
+    public:
+        Binding(std::string type);
+        std::string getType();
+};
+
 #endif // ! DRIVER_HH

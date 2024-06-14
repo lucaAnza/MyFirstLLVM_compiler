@@ -19,6 +19,7 @@
   class FunctionAST;
   class SeqAST;
   class PrototypeAST;
+  class Binding;
 }
 
 // The parsing context.
@@ -44,8 +45,10 @@
   SLASH      "/"
   LPAREN     "("
   RPAREN     ")"
+  EQUAL      "="
   EXTERN     "extern"
   DEF        "def"
+  VAR        "var"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -60,6 +63,8 @@
 %type <PrototypeAST*> external
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
+%type <Binding*> binding
+%type <ExprAST*> initexp
 %%
 %start startsymb;
 
@@ -68,7 +73,15 @@ program                 { drv.root = $1; }
 
 program:
   %empty                { $$ = new SeqAST(nullptr,nullptr); }
-|  top ";" program      { $$ = new SeqAST($1,$3); };
+|  top ";" program      { $$ = new SeqAST($1,$3); }
+|  binding ";" program  { $$ = new SeqAST($1,$3); }
+
+binding:
+  "var" "id" initexp   { $$ = new Binding($2); };
+
+initexp:
+  %empty               { $$ = nullptr; }
+| "=" exp              { $$ = $2; };
 
 top:
 %empty                  { $$ = nullptr; }

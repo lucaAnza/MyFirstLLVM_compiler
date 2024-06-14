@@ -41,6 +41,7 @@ blank   [ \t]
 ")"      return yy::parser::make_RPAREN    (loc);
 ";"      return yy::parser::make_SEMICOLON (loc);
 ","      return yy::parser::make_COMMA     (loc);
+"="      return yy::parser::make_EQUAL     (loc);
 
 {num}    { errno = 0;
            double n = strtod(yytext, NULL);
@@ -52,6 +53,7 @@ blank   [ \t]
          
 "def"    { return yy::parser::make_DEF(loc); }
 "extern" { return yy::parser::make_EXTERN(loc); }
+"var"    { return yy::parser::make_VAR(loc); }
 
 {id}     { return yy::parser::make_IDENTIFIER (yytext, loc); }
 

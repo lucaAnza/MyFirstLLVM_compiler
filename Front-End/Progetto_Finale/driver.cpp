@@ -298,3 +298,15 @@ Function *FunctionAST::codegen(driver& drv) {
   return nullptr;
 };
 
+
+
+/************************* Binding **************************/
+// Dichiarazione della classe
+Binding::Binding(std::string type): type(type) {std::cout<<"hi i am luca\n";};
+std::string Binding::getType(){
+        std::cout<<"tipo =  "<<type<<"\n";
+        return type;
+}
+
+
+
