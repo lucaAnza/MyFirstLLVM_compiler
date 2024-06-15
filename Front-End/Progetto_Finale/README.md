@@ -34,8 +34,6 @@ Abstract Syntax Tree scheme:
 
 New features from the starting grammar are <span style="color:#57DDFF">highlighted</span>.
 
-<span style="color:red"> TODO -> Evidenziare Binding,Vardefs,Expif,CondExp... </span>
-
 <table>
     <tr>
         <td> <img src="img/Grammar_liv1_1.png" alt="liv1_1" width=90%></img> </td>
@@ -45,14 +43,45 @@ New features from the starting grammar are <span style="color:#57DDFF">highlight
 
 Feature:
 
-1. Binding.
-2. Block.
-3. Statement and Statements.
-4. Assignment.
+1. Block.
+2. Statements.
+3. Vardefs.
+4. Assignments
 5. Init of local variable.
 6. Init of global variable.
     
 <br>
+
+#### Block,Statements and Vardefs (step1_1)
+
+These are the first feature we are going to implement. Because we need a base for Bindings,Assignments,If.
+<br>
+Summary of each steps:
+
+1. Add rules on grammar(</b>parser.yy<b>)
+
+```c++
+
+definition:
+  "def" proto block   { $$ = new FunctionAST($2,$3); $2->noemit(); };  // <----- change exp with block
+
+...
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #### Binding
 

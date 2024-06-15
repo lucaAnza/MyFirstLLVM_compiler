@@ -20,6 +20,7 @@
   class SeqAST;
   class PrototypeAST;
   class BindingAST;
+  class StmtAST;
 }
 
 // The parsing context.
@@ -65,6 +66,7 @@
 %type <std::vector<std::string>> idseq
 %type <BindingAST*> binding
 %type <ExprAST*> initexp
+%type <StmtAST*> stmts
 
 %%
 %start startsymb;
@@ -75,10 +77,6 @@ program                 { drv.root = $1; }
 program:
   %empty                { $$ = new SeqAST(nullptr,nullptr); }
 |  top ";" program      { $$ = new SeqAST($1,$3); }
-|  binding ";" program  { $$ = new SeqAST($1,$3); }
-
-binding:
-  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
 initexp:
   %empty               { $$ = nullptr; }
@@ -90,7 +88,7 @@ top:
 | external              { $$ = $1; };
 
 definition:
-  "def" proto exp       { $$ = new FunctionAST($2,$3); $2->noemit(); };
+  "def" proto block       { $$ = new FunctionAST($2,$3); $2->noemit(); };
 
 external:
   "extern" proto        { $$ = $2; };
@@ -106,6 +104,33 @@ idseq:
 %left "<" "=";
 %left "+" "-";
 %left "*" "/";
+
+////////////////////////////////////// PARTE TO FINISH...
+stmts:
+  stmt                 { $$ = new StmtAST($1,nullptr);}
+| stmt ";" stmts       { $$ = new StmtAST($1,$3);};
+
+stmt:
+//  assignment
+//| block
+exp                    { $$ = $1;};
+
+assignment:
+  %empty           { $$ nullptr;};
+
+block:
+  "{" stmts "}"
+| "{" vardefs ";" stmts "}"
+
+vardefs:
+  binding
+| vardefs ";" binding
+
+binding:
+  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
+
+////////////////////////////////////// PARTE TO FINISH...
+
 
 exp:
   exp "+" exp           { $$ = new BinaryExprAST('+',$1,$3); }

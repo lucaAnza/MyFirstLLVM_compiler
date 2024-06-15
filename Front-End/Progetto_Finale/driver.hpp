@@ -169,17 +169,25 @@ class BindingAST : public RootAST{
         std::string& getName();
 };
 
-/*
+
+
+/// StmtAST
+class StmtAST : public SeqAST {  
+  public:
+  StmtAST(RootAST* first , RootAST* continuation);
+};
+
+
 /// BlockAST
 class BlockAST : public ExprAST {
   private:
-    std::vector<InitAST*> Def;
-    std::vector<StmtAST*> Stmts;
+    std::vector<BindingAST*> bindings;
+    std::vector<StmtAST*> stmts;
   public:
-  BlockAST(std::vector<InitAST*> Def,std::vector<StmtAST*> Stmts);
-  BlockAST(std::vector<StmtAST*> Stmts);
+  BlockAST(std::vector<BindingAST*> bindings,std::vector<StmtAST*> stmts);
+  BlockAST(std::vector<StmtAST*> stmts);
   Value *codegen(driver& drv) override;
 };
-*/
+
 
 #endif // ! DRIVER_HH
