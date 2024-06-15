@@ -19,7 +19,7 @@
   class FunctionAST;
   class SeqAST;
   class PrototypeAST;
-  class Binding;
+  class BindingAST;
 }
 
 // The parsing context.
@@ -63,8 +63,9 @@
 %type <PrototypeAST*> external
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
-%type <Binding*> binding
+%type <BindingAST*> binding
 %type <ExprAST*> initexp
+
 %%
 %start startsymb;
 
@@ -77,7 +78,7 @@ program:
 |  binding ";" program  { $$ = new SeqAST($1,$3); }
 
 binding:
-  "var" "id" initexp   { $$ = new Binding($2); };
+  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
 initexp:
   %empty               { $$ = nullptr; }

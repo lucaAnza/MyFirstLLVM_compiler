@@ -58,7 +58,7 @@
   class FunctionAST;
   class SeqAST;
   class PrototypeAST;
-  class Binding;
+  class BindingAST;
 
 #line 64 "parser.hpp"
 
@@ -661,7 +661,7 @@ namespace yy {
     union union_type
     {
       // binding
-      char dummy1[sizeof (Binding*)];
+      char dummy1[sizeof (BindingAST*)];
 
       // initexp
       // exp
@@ -844,7 +844,7 @@ namespace yy {
         switch (this->kind ())
     {
       case symbol_kind::S_binding: // binding
-        value.move< Binding* > (std::move (that.value));
+        value.move< BindingAST* > (std::move (that.value));
         break;
 
       case symbol_kind::S_initexp: // initexp
@@ -908,13 +908,13 @@ namespace yy {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, Binding*&& v, location_type&& l)
+      basic_symbol (typename Base::kind_type t, BindingAST*&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
         , location (std::move (l))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const Binding*& v, const location_type& l)
+      basic_symbol (typename Base::kind_type t, const BindingAST*& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -1058,7 +1058,7 @@ namespace yy {
 switch (yykind)
     {
       case symbol_kind::S_binding: // binding
-        value.template destroy< Binding* > ();
+        value.template destroy< BindingAST* > ();
         break;
 
       case symbol_kind::S_initexp: // initexp
@@ -1928,7 +1928,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_binding: // binding
-        value.copy< Binding* > (YY_MOVE (that.value));
+        value.copy< BindingAST* > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_initexp: // initexp
@@ -2000,7 +2000,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_binding: // binding
-        value.move< Binding* > (YY_MOVE (s.value));
+        value.move< BindingAST* > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_initexp: // initexp

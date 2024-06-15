@@ -1,8 +1,8 @@
 # My first Front-End compiler.
 
+⚠ Remember to install dependencies package!
 
 ## How to start the compiler
-⚠ Remember to install dependencies package!
 
 1. `make`
 2. `./kcomp <filename>` -> Stampa in stderr il codice IR generato.
@@ -34,32 +34,36 @@ Abstract Syntax Tree scheme:
 
 New features from the starting grammar are <span style="color:#57DDFF">highlighted</span>.
 
+<span style="color:red"> TODO -> Evidenziare Binding,Vardefs,Expif,CondExp... </span>
+
 <table>
     <tr>
         <td> <img src="img/Grammar_liv1_1.png" alt="liv1_1" width=90%></img> </td>
-        <td> <img src="img/Grammar_liv1_1.png" alt="liv1_1" width=90%></img> </td>
+        <td> <img src="img/Grammar_liv1_2.png" alt="liv1_1" width=90%></img> </td>
     </tr>
 </table>
 
 Feature:
 
 1. Binding.
-2. Assignment.
-3. Init of local variable.
-4. Init of global variable.
+2. Block.
+3. Statement and Statements.
+4. Assignment.
+5. Init of local variable.
+6. Init of global variable.
     
 <br>
 
-#### Assignment
+#### Binding
 
 This is the first feature that we will implement.
 For this reason we add a rule in the grammar to have the possibility
 to create a programm made with only a Binding.
-So we can easily test the feature.
+So we can easily test it.
 <br>
 Summary of each steps:
 
-1. Add rules on grammar
+1. Add rules on grammar(</b>parser.yy<b>)
 
     ```c++
     program:
@@ -75,5 +79,58 @@ Summary of each steps:
     | "=" exp              { $$ = $2; };
     ```
 
-2. Continue...
+2. Add class header(<b>driver.hpp</b>)
 
+    ```c++
+    // Binding - Classe che rappresenta un binding (Ex: var x = 7)
+    class Binding : public RootAST{
+        private:
+            std::string type;
+        public:
+            Binding(std::string type);
+            std::string getType();
+    };
+    ```
+
+3. Add class implementation(<b>driver.cpp</b>)
+
+    ```c++
+    // Implementazione della classe
+    Binding::Binding(std::string type): type(type) {std::cout<<"hi i am luca\n";};
+    std::string Binding::getType(){
+            std::cout<<"tipo =  "<<type<<"\n";
+            return type;
+    }
+    ```
+
+4. Add type on parser,the eventually new token and the class use(</b>parser.yy<b>)
+
+    ```c++
+    //class
+    %code requires {
+    #include <string>
+    #include <exception>
+    ...
+    class BindingAST;
+    ...
+    }
+
+    //type
+    %type <Binding*> binding
+    %type <ExprAST*> initexp
+
+    //token
+    %define api.token.prefix {TOK_}
+    %token
+    ...
+    EQUAL      "="
+    ...
+    ;
+    ```
+
+5. Add token on <b>scanner.ll</b>
+
+    `"="      return yy::parser::make_EQUAL     (loc);`
+
+
+#### Block

@@ -159,12 +159,27 @@ public:
 //////////////////////////////////
 
 // Binding - Classe che rappresenta un binding (Ex: var x = 7)
-class Binding : public RootAST{
+class BindingAST : public RootAST{
     private:
-        std::string type;
+        std::string name;
+        ExprAST* val;
     public:
-        Binding(std::string type);
-        std::string getType();
+        BindingAST(std::string name , ExprAST *val);
+        AllocaInst* codegen(driver& drv);
+        std::string& getName();
 };
+
+/*
+/// BlockAST
+class BlockAST : public ExprAST {
+  private:
+    std::vector<InitAST*> Def;
+    std::vector<StmtAST*> Stmts;
+  public:
+  BlockAST(std::vector<InitAST*> Def,std::vector<StmtAST*> Stmts);
+  BlockAST(std::vector<StmtAST*> Stmts);
+  Value *codegen(driver& drv) override;
+};
+*/
 
 #endif // ! DRIVER_HH

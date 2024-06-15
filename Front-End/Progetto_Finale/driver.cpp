@@ -299,14 +299,58 @@ Function *FunctionAST::codegen(driver& drv) {
 };
 
 
+///////////////////////////////////
+//Classi aggiunte per il progetto//
+///////////////////////////////////
+
 
 /************************* Binding **************************/
-// Dichiarazione della classe
-Binding::Binding(std::string type): type(type) {std::cout<<"hi i am luca\n";};
-std::string Binding::getType(){
-        std::cout<<"tipo =  "<<type<<"\n";
-        return type;
-}
+BindingAST::BindingAST(std::string name, ExprAST* val) : name(name), val(val) {};
+std::string& BindingAST::getName(){ return name; };
+
+AllocaInst* BindingAST::codegen(driver& drv) {
+  Function *fun = builder->GetInsertBlock()->getParent();
+  Value* boundval;
+  if (val){
+    std::cout<<"code gen!\n";
+    boundval = val->codegen(drv);
+  }
+  else{
+     std::cout<<"code gen empty!\n";
+    NumberExprAST* defaultVal = new NumberExprAST(0.0);
+    boundval = defaultVal->codegen(drv);
+  }
+  AllocaInst* Alloca = CreateEntryBlockAlloca(fun,name);
+  builder->CreateStore(boundval,Alloca);
+  return Alloca;
+};
 
 
+/*************************Block******************************/
+/*BlockAST::BlockAST(std::vector<InitAST*> Def,std::vector<StmtAST*> Stmts):
+  Def(std::move(Def)), Stmts(std::move(Stmts)) {};
+
+BlockAST::BlockAST(std::vector<StmtAST*> Stmts):
+  Stmts(std::move(Stmts)) {};
+
+Value* BlockAST::codegen(driver& drv){
+  // vettore per il salvataggio della symbol table
+  std::vector<AllocaInst*> tmp;
+  for (int i=0; i<Def.size();i++ ){
+    AllocaInst *boundval = (AllocaInst*) Def[i]->codegen(drv);
+    if (!boundval) return nullptr;
+    //salvo il vecchio valore della varaiabile oscurata.
+    tmp.push_back(drv.NamedValues[Def[i]->getName()]);
+    drv.NamedValues[Def[i]->getName()] = boundval;
+  }
+  Value* blockvalue;
+  for(int i=0; i<Stmts.size(); i++){
+    blockvalue = Stmts[i]->codegen(drv);
+    if(!blockvalue) return nullptr;
+  }
+    
+  for (int i=0; i<Def.size();i++ )
+    drv.NamedValues[Def[i]->getName()] = tmp[i]; //rimetto i valori originali della symb
+  return blockvalue;
+};*/
 
