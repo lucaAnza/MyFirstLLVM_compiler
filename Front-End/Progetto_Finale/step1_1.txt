@@ -1,1 +1,1 @@
-def somma()3+3;
+def somma(){ 3+4 ; {2+2} };

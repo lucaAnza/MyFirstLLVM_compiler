@@ -20,7 +20,7 @@
   class SeqAST;
   class PrototypeAST;
   class BindingAST;
-  class StmtAST;
+  class BlockAST;
 }
 
 // The parsing context.
@@ -47,6 +47,8 @@
   LPAREN     "("
   RPAREN     ")"
   EQUAL      "="
+  LPAREN_G   "{"
+  RPAREN_G   "}"
   EXTERN     "extern"
   DEF        "def"
   VAR        "var"
@@ -64,9 +66,10 @@
 %type <PrototypeAST*> external
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
-%type <BindingAST*> binding
-%type <ExprAST*> initexp
-%type <StmtAST*> stmts
+%type <BlockAST*> block;
+//%type <ExprAST*> initexp
+%type <std::vector<ExprAST*>> stmts;
+%type <ExprAST*> stmt;
 
 %%
 %start startsymb;
@@ -78,9 +81,9 @@ program:
   %empty                { $$ = new SeqAST(nullptr,nullptr); }
 |  top ";" program      { $$ = new SeqAST($1,$3); }
 
-initexp:
-  %empty               { $$ = nullptr; }
-| "=" exp              { $$ = $2; };
+//initexp:
+//  %empty               { $$ = nullptr; }
+//| "=" exp              { $$ = $2; };
 
 top:
 %empty                  { $$ = nullptr; }
@@ -97,39 +100,38 @@ proto:
   "id" "(" idseq ")"    { $$ = new PrototypeAST($1,$3);  };
 
 idseq:
-  %empty                { std::vector<std::string> args;
-                         $$ = args; }
+  %empty                { std::vector<std::string> args; $$ = args; }
 | "id" idseq            { $2.insert($2.begin(),$1); $$ = $2; };
 
 %left "<" "=";
 %left "+" "-";
 %left "*" "/";
 
-////////////////////////////////////// PARTE TO FINISH...
+////////////////////////////////////// WORK IN PROGRESS... //////////////////////////////////////////////////////////
 stmts:
-  stmt                 { $$ = new StmtAST($1,nullptr);}
-| stmt ";" stmts       { $$ = new StmtAST($1,$3);};
+  stmt                 { std::vector<ExprAST*> statemets; statemets.insert(statemets.begin(),$1); $$ = statemets;}
+| stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
 
 stmt:
 //  assignment
-//| block
-exp                    { $$ = $1;};
+block                    { $$ = $1;}
+| exp                    { $$ = $1;};
 
-assignment:
-  %empty           { $$ nullptr;};
+//assignment:
+//  %empty           { $$ nullptr;};
 
 block:
-  "{" stmts "}"
-| "{" vardefs ";" stmts "}"
+  "{" stmts "}"                     { $$ = new BlockAST($2); };
+// | "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2;$4); };
 
-vardefs:
-  binding
-| vardefs ";" binding
+//vardefs:
+//  binding
+//| vardefs ";" binding
 
-binding:
-  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
+//binding:
+//  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
-////////////////////////////////////// PARTE TO FINISH...
+////////////////////////////////////// WORK IN PROGRESS... //////////////////////////////////////////////////////////
 
 
 exp:

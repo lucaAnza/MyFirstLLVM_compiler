@@ -59,8 +59,9 @@
   class SeqAST;
   class PrototypeAST;
   class BindingAST;
+  class BlockAST;
 
-#line 64 "parser.hpp"
+#line 65 "parser.hpp"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -200,7 +201,7 @@
 #endif
 
 namespace yy {
-#line 204 "parser.hpp"
+#line 205 "parser.hpp"
 
 
   /// A point in a source file.
@@ -660,10 +661,10 @@ namespace yy {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
-      // binding
-      char dummy1[sizeof (BindingAST*)];
+      // block
+      char dummy1[sizeof (BlockAST*)];
 
-      // initexp
+      // stmt
       // exp
       // idexp
       char dummy2[sizeof (ExprAST*)];
@@ -685,6 +686,7 @@ namespace yy {
       // "id"
       char dummy7[sizeof (std::string)];
 
+      // stmts
       // optexp
       // explist
       char dummy8[sizeof (std::vector<ExprAST*>)];
@@ -752,11 +754,13 @@ namespace yy {
     TOK_LPAREN = 264,              // "("
     TOK_RPAREN = 265,              // ")"
     TOK_EQUAL = 266,               // "="
-    TOK_EXTERN = 267,              // "extern"
-    TOK_DEF = 268,                 // "def"
-    TOK_VAR = 269,                 // "var"
-    TOK_IDENTIFIER = 270,          // "id"
-    TOK_NUMBER = 271               // "number"
+    TOK_LPAREN_G = 267,            // "{"
+    TOK_RPAREN_G = 268,            // "}"
+    TOK_EXTERN = 269,              // "extern"
+    TOK_DEF = 270,                 // "def"
+    TOK_VAR = 271,                 // "var"
+    TOK_IDENTIFIER = 272,          // "id"
+    TOK_NUMBER = 273               // "number"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -773,7 +777,7 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 18, ///< Number of tokens.
+        YYNTOKENS = 20, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -787,26 +791,29 @@ namespace yy {
         S_LPAREN = 9,                            // "("
         S_RPAREN = 10,                           // ")"
         S_EQUAL = 11,                            // "="
-        S_EXTERN = 12,                           // "extern"
-        S_DEF = 13,                              // "def"
-        S_VAR = 14,                              // "var"
-        S_IDENTIFIER = 15,                       // "id"
-        S_NUMBER = 16,                           // "number"
-        S_17_ = 17,                              // "<"
-        S_YYACCEPT = 18,                         // $accept
-        S_startsymb = 19,                        // startsymb
-        S_program = 20,                          // program
-        S_binding = 21,                          // binding
-        S_initexp = 22,                          // initexp
+        S_LPAREN_G = 12,                         // "{"
+        S_RPAREN_G = 13,                         // "}"
+        S_EXTERN = 14,                           // "extern"
+        S_DEF = 15,                              // "def"
+        S_VAR = 16,                              // "var"
+        S_IDENTIFIER = 17,                       // "id"
+        S_NUMBER = 18,                           // "number"
+        S_19_ = 19,                              // "<"
+        S_YYACCEPT = 20,                         // $accept
+        S_startsymb = 21,                        // startsymb
+        S_program = 22,                          // program
         S_top = 23,                              // top
         S_definition = 24,                       // definition
         S_external = 25,                         // external
         S_proto = 26,                            // proto
         S_idseq = 27,                            // idseq
-        S_exp = 28,                              // exp
-        S_idexp = 29,                            // idexp
-        S_optexp = 30,                           // optexp
-        S_explist = 31                           // explist
+        S_stmts = 28,                            // stmts
+        S_stmt = 29,                             // stmt
+        S_block = 30,                            // block
+        S_exp = 31,                              // exp
+        S_idexp = 32,                            // idexp
+        S_optexp = 33,                           // optexp
+        S_explist = 34                           // explist
       };
     };
 
@@ -843,11 +850,11 @@ namespace yy {
       {
         switch (this->kind ())
     {
-      case symbol_kind::S_binding: // binding
-        value.move< BindingAST* > (std::move (that.value));
+      case symbol_kind::S_block: // block
+        value.move< BlockAST* > (std::move (that.value));
         break;
 
-      case symbol_kind::S_initexp: // initexp
+      case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_idexp: // idexp
         value.move< ExprAST* > (std::move (that.value));
@@ -875,6 +882,7 @@ namespace yy {
         value.move< std::string > (std::move (that.value));
         break;
 
+      case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.move< std::vector<ExprAST*> > (std::move (that.value));
@@ -908,13 +916,13 @@ namespace yy {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, BindingAST*&& v, location_type&& l)
+      basic_symbol (typename Base::kind_type t, BlockAST*&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
         , location (std::move (l))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const BindingAST*& v, const location_type& l)
+      basic_symbol (typename Base::kind_type t, const BlockAST*& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -1057,11 +1065,11 @@ namespace yy {
         // Value type destructor.
 switch (yykind)
     {
-      case symbol_kind::S_binding: // binding
-        value.template destroy< BindingAST* > ();
+      case symbol_kind::S_block: // block
+        value.template destroy< BlockAST* > ();
         break;
 
-      case symbol_kind::S_initexp: // initexp
+      case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_idexp: // idexp
         value.template destroy< ExprAST* > ();
@@ -1089,6 +1097,7 @@ switch (yykind)
         value.template destroy< std::string > ();
         break;
 
+      case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.template destroy< std::vector<ExprAST*> > ();
@@ -1197,7 +1206,7 @@ switch (yykind)
 #if !defined _MSC_VER || defined __clang__
         YY_ASSERT (tok == token::TOK_END
                    || (token::TOK_YYerror <= tok && tok <= token::TOK_VAR)
-                   || tok == 272);
+                   || tok == 274);
 #endif
       }
 #if 201103L <= YY_CPLUSPLUS
@@ -1450,6 +1459,36 @@ switch (yykind)
       make_EQUAL (const location_type& l)
       {
         return symbol_type (token::TOK_EQUAL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_LPAREN_G (location_type l)
+      {
+        return symbol_type (token::TOK_LPAREN_G, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LPAREN_G (const location_type& l)
+      {
+        return symbol_type (token::TOK_LPAREN_G, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_RPAREN_G (location_type l)
+      {
+        return symbol_type (token::TOK_RPAREN_G, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RPAREN_G (const location_type& l)
+      {
+        return symbol_type (token::TOK_RPAREN_G, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1857,9 +1896,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 46,     ///< Last index in yytable_.
-      yynnts_ = 14,  ///< Number of nonterminal symbols.
-      yyfinal_ = 14 ///< Termination state number.
+      yylast_ = 51,     ///< Last index in yytable_.
+      yynnts_ = 15,  ///< Number of nonterminal symbols.
+      yyfinal_ = 11 ///< Termination state number.
     };
 
 
@@ -1905,10 +1944,10 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17
+      15,    16,    17,    18,    19
     };
     // Last valid token kind.
-    const int code_max = 272;
+    const int code_max = 274;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1927,11 +1966,11 @@ switch (yykind)
   {
     switch (this->kind ())
     {
-      case symbol_kind::S_binding: // binding
-        value.copy< BindingAST* > (YY_MOVE (that.value));
+      case symbol_kind::S_block: // block
+        value.copy< BlockAST* > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_initexp: // initexp
+      case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_idexp: // idexp
         value.copy< ExprAST* > (YY_MOVE (that.value));
@@ -1959,6 +1998,7 @@ switch (yykind)
         value.copy< std::string > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.copy< std::vector<ExprAST*> > (YY_MOVE (that.value));
@@ -1999,11 +2039,11 @@ switch (yykind)
     super_type::move (s);
     switch (this->kind ())
     {
-      case symbol_kind::S_binding: // binding
-        value.move< BindingAST* > (YY_MOVE (s.value));
+      case symbol_kind::S_block: // block
+        value.move< BlockAST* > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_initexp: // initexp
+      case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_exp: // exp
       case symbol_kind::S_idexp: // idexp
         value.move< ExprAST* > (YY_MOVE (s.value));
@@ -2031,6 +2071,7 @@ switch (yykind)
         value.move< std::string > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_optexp: // optexp
       case symbol_kind::S_explist: // explist
         value.move< std::vector<ExprAST*> > (YY_MOVE (s.value));
@@ -2106,7 +2147,7 @@ switch (yykind)
 
 
 } // yy
-#line 2110 "parser.hpp"
+#line 2151 "parser.hpp"
 
 
 

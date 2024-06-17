@@ -171,21 +171,14 @@ class BindingAST : public RootAST{
 
 
 
-/// StmtAST
-class StmtAST : public SeqAST {  
-  public:
-  StmtAST(RootAST* first , RootAST* continuation);
-};
-
-
 /// BlockAST
 class BlockAST : public ExprAST {
   private:
     std::vector<BindingAST*> bindings;
-    std::vector<StmtAST*> stmts;
+    std::vector<ExprAST*> stmts;
   public:
-  BlockAST(std::vector<BindingAST*> bindings,std::vector<StmtAST*> stmts);
-  BlockAST(std::vector<StmtAST*> stmts);
+  BlockAST(std::vector<BindingAST*> bindings,std::vector<ExprAST*> stmts);
+  BlockAST(std::vector<ExprAST*> stmts);
   Value *codegen(driver& drv) override;
 };
 

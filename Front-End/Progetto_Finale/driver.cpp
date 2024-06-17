@@ -326,37 +326,37 @@ AllocaInst* BindingAST::codegen(driver& drv) {
 };
 
 
-/***************************Stmts***********************/
-StmtAST::StmtAST(RootAST* first , RootAST* continuation): first(first) , continuation(continuation) {};
-
 
 
 /*************************Block******************************/
-/*
-BlockAST::BlockAST(std::vector<InitAST*> bindings,std::vector<StmtAST*> stmts):
-  Def(std::move(bindings)), stmts(std::move(stmts)) {};
+BlockAST::BlockAST(std::vector<BindingAST*> bindings,std::vector<ExprAST*> stmts):
+  bindings(std::move(bindings)), stmts(std::move(stmts)) {};
 
-BlockAST::BlockAST(std::vector<StmtAST*> stmts):
+BlockAST::BlockAST(std::vector<ExprAST*> stmts):
   stmts(std::move(stmts)) {};
 
 Value* BlockAST::codegen(driver& drv){
   // vettore per il salvataggio della symbol table
   std::vector<AllocaInst*> tmp;
-  for (int i=0; i<bindings.size();i++ ){
+  // Binding allocator
+  /*for (int i=0; i<bindings.size();i++ ){
     AllocaInst *boundval = (AllocaInst*) bindings[i]->codegen(drv);
     if (!boundval) return nullptr;
     //salvo il vecchio valore della varaiabile oscurata.
     tmp.push_back(drv.NamedValues[bindings[i]->getName()]);
     drv.NamedValues[bindings[i]->getName()] = boundval;
-  }
-  Value* blockvalue;
+  }*/
+  Value* blockValue;
+  // Statements allocator
   for(int i=0; i<stmts.size(); i++){
-    blockvalue = stmts[i]->codegen(drv);
-    if(!blockvalue) return nullptr;
+    blockValue = stmts[i]->codegen(drv);
+    if(!blockValue) return nullptr;
   }
     
-  for (int i=0; i<bindings.size();i++ )
-    drv.NamedValues[bindings[i]->getName()] = tmp[i]; //rimetto i valori originali della symb
-  return blockvalue;
+  //for (int i=0; i<bindings.size();i++ )
+  //  drv.NamedValues[bindings[i]->getName()] = tmp[i]; //rimetto i valori originali della symb
+  
+  // Ritorna l'ultimo valore
+  return blockValue;   
 };
-*/
+
