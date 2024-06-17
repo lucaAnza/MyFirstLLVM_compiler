@@ -1,5 +1,10 @@
 # ESERCITAZIONE 2
 
+## Riassunto contenuto
+
+In questa esercitazione si andrà a creare un passo di ottimizazione di tipo MODULE_PASS.<br>
+Inoltre verrano sostituite le istruzione di <b>shift</b> con <b>mul</b>.
+
 ## Prerequisiti
 
 · Ricorda il seguente schema di classi:
@@ -50,21 +55,22 @@ Inoltre ogni nodo *User* ha una lista di *Value* che lo compongono. Dato un *Ins
 ```c++
 User &Inst = ...;
 for (auto Iter = Inst.op_begin(); Iter != Inst.op_end(); ++Iter)
-    { Value *Operand = *Iter; }
+    { Value *Operand = *Iter; }  //User di Inst
 ```
 
-### User
+### Users
 
-Da *User* ,oltre agli operandi (Value), è possibile ottenere chi utilizza quella determinata instruzione.
+Da *User* ,oltre agli operandi (Value) tramite `op.begin()`. <br>
+è possibile ottenere chi utilizza quella determinata instruzione(Users).
 
 ```c++
 User &Inst = ...;
 for (auto Iter = Inst.user_begin(); Iter != Inst.user_end(); ++Iter)
-    { User *InstUser = *Iter; }
+    { User *InstUser = *Iter; }    //Usee di Inst
 ```
 
 
-## ESERCIZIO 1  (Analisi di LocalOpts.cpp)
+## ESERCIZIO 1  Creazione del passo
 
 ### Parte1
 
@@ -140,7 +146,7 @@ Utilizzare solo funzioni di LLVM, non usare moduli matematici ( ex: #cmath )
 Documentation on : < https://llvm.org/doxygen/classes.html >
 ```
 
-![consegna](/Back-End/Esercitazioni/Esercitazione2/screen_1.png)
+<img src="images/screen_1.png" alt="consegna" width=40%></img>
 
 
 ADVICE :  Ricordati che per compilare devi andare in `/LLVM/BUILD/`:
