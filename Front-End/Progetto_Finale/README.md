@@ -52,22 +52,102 @@ Feature:
     
 <br>
 
-#### Block,Statements and Vardefs (step1_1)
+#### Block and Statements (step1_1)
 
-These are the first feature we are going to implement. Because we need a base for Bindings,Assignments,If.
-<br>
+These are the first feature we are going to implement.
+Because we need a base for Bindings,Assignments,If.
+<br><br>
 Summary of each steps:
 
-1. Add rules on grammar(</b>parser.yy<b>)
+1. Add <b>class</b>, <b>type</b>, <b>token</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
 
-```c++
+    ```c++
 
-definition:
-  "def" proto block   { $$ = new FunctionAST($2,$3); $2->noemit(); };  // <----- change exp with block
+    ///////////////////////////////////CLASS//////////////////////////////////////////
+    %code requires {
+    ...
+    class BlockAST;    //New
+    }
 
-...
+    ///////////////////////////////////TOKEN//////////////////////////////////////////
 
-```
+    %define api.token.prefix {TOK_}
+    %token
+    LPAREN_G   "{"  //New
+    RPAREN_G   "}"  //New
+    ;
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+
+    %type <BlockAST*> block;
+    %type <std::vector<ExprAST*>> stmts;
+    %type <ExprAST*> stmt;
+
+    ///////////////////////////////////RULES//////////////////////////////////////////
+
+    definition:
+    "def" proto block   { $$ = new FunctionAST($2,$3); $2->noemit(); };  // <----- change exp with block
+
+    stmts:
+    stmt                 { std::vector<ExprAST*> statemets; statemets.insert(statemets.begin(),$1); $$ = statemets;}
+    | stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
+
+    stmt:
+    block                    { $$ = $1;}
+    | exp                    { $$ = $1;};
+
+    block:
+    "{" stmts "}"                     { $$ = new BlockAST($2); };
+
+    ```
+
+2. Add class header(<b>driver.hpp</b>)
+
+    ```c++
+    /// BlockAST
+    class BlockAST : public ExprAST {
+    private:
+        std::vector<BindingAST*> bindings;
+        std::vector<ExprAST*> stmts;
+    public:
+    BlockAST(std::vector<BindingAST*> bindings,std::vector<ExprAST*> stmts);
+    BlockAST(std::vector<ExprAST*> stmts);
+    Value *codegen(driver& drv) override;
+    };
+    ```
+
+3. Add class implementation(<b>driver.cpp</b>)
+
+    ```c++
+
+    /*************************Block******************************/
+    BlockAST::BlockAST(std::vector<BindingAST*> bindings,std::vector<ExprAST*> stmts):
+    bindings(std::move(bindings)), stmts(std::move(stmts)) {};
+
+    BlockAST::BlockAST(std::vector<ExprAST*> stmts):
+    stmts(std::move(stmts)) {};
+
+    Value* BlockAST::codegen(driver& drv){
+
+    Value* blockValue;
+    
+    // Statements allocator
+    for(int i=0; i<stmts.size(); i++){
+        blockValue = stmts[i]->codegen(drv);
+        if(!blockValue) return nullptr;
+    }
+    
+    return blockValue;   
+    };
+        
+    ```
+
+4. Add token on <b>scanner.ll</b>
+
+    ```c++
+    "{"      return yy::parser::make_LPAREN_G  (loc);
+    "}"      return yy::parser::make_RPAREN_G  (loc);
+    ```
 
 
 
@@ -75,14 +155,7 @@ definition:
 
 
 
-
-
-
-
-
-
-
-
+/////////////////TO DO///////////////////////////
 #### Binding
 
 This is the first feature that we will implement.
