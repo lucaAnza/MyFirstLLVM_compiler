@@ -67,9 +67,12 @@
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
 %type <BlockAST*> block;
-//%type <ExprAST*> initexp
+%type <ExprAST*> initexp
 %type <std::vector<ExprAST*>> stmts;
 %type <ExprAST*> stmt;
+%type <ExprAST*> assignment;
+%type <std::vector<BindingAST*>> vardefs;
+%type <BindingAST*> binding;
 
 %%
 %start startsymb;
@@ -81,9 +84,9 @@ program:
   %empty                { $$ = new SeqAST(nullptr,nullptr); }
 |  top ";" program      { $$ = new SeqAST($1,$3); }
 
-//initexp:
-//  %empty               { $$ = nullptr; }
-//| "=" exp              { $$ = $2; };
+initexp:
+  %empty               { $$ = nullptr; }
+| "=" exp              { $$ = $2; };
 
 top:
 %empty                  { $$ = nullptr; }
@@ -113,23 +116,24 @@ stmts:
 | stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
 
 stmt:
-//  assignment
-block                    { $$ = $1;}
-| exp                    { $$ = $1;};
+assignment                 { $$ = $1;}
+| block                    { $$ = $1;}
+| exp                      { $$ = $1;};
 
-//assignment:
-//  %empty           { $$ nullptr;};
+/////////// TO DO
+assignment:
+  "id" "=" exp           { $$ = nullptr;};
 
 block:
-  "{" stmts "}"                     { $$ = new BlockAST($2); };
-// | "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2;$4); };
+  "{" stmts "}"                  { $$ = new BlockAST($2); };
+| "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2,$4); };
 
-//vardefs:
-//  binding
-//| vardefs ";" binding
+vardefs:
+  binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}
+| vardefs ";" binding    { $1.insert($1.begin(),$3); $$ = $1; };
 
-//binding:
-//  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
+binding:
+  "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
 ////////////////////////////////////// WORK IN PROGRESS... //////////////////////////////////////////////////////////
 

@@ -167,6 +167,7 @@ class BindingAST : public RootAST{
         BindingAST(std::string name , ExprAST *val);
         AllocaInst* codegen(driver& drv);
         std::string& getName();
+        ExprAST* getValue();
 };
 
 

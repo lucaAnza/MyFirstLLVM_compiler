@@ -306,17 +306,19 @@ Function *FunctionAST::codegen(driver& drv) {
 
 /************************* Binding **************************/
 BindingAST::BindingAST(std::string name, ExprAST* val) : name(name), val(val) {};
-std::string& BindingAST::getName(){ return name; };
 
+//Getter
+std::string& BindingAST::getName(){ return name; };
+ExprAST* BindingAST::getValue(){ return val; };
+
+//Methods
 AllocaInst* BindingAST::codegen(driver& drv) {
   Function *fun = builder->GetInsertBlock()->getParent();
   Value* boundval;
   if (val){
-    std::cout<<"code gen!\n";
     boundval = val->codegen(drv);
   }
   else{
-     std::cout<<"code gen empty!\n";
     NumberExprAST* defaultVal = new NumberExprAST(0.0);
     boundval = defaultVal->codegen(drv);
   }
@@ -335,26 +337,33 @@ BlockAST::BlockAST(std::vector<BindingAST*> bindings,std::vector<ExprAST*> stmts
 BlockAST::BlockAST(std::vector<ExprAST*> stmts):
   stmts(std::move(stmts)) {};
 
+
+//Methods
 Value* BlockAST::codegen(driver& drv){
+  
   // vettore per il salvataggio della symbol table
   std::vector<AllocaInst*> tmp;
+  
   // Binding allocator
-  /*for (int i=0; i<bindings.size();i++ ){
+  for (int i=0; i<bindings.size();i++ ){
     AllocaInst *boundval = (AllocaInst*) bindings[i]->codegen(drv);
-    if (!boundval) return nullptr;
-    //salvo il vecchio valore della varaiabile oscurata.
+    if (!boundval) 
+     return nullptr;
+    
+    //salvo il vecchio valore della variabile oscurata(scope differente)
     tmp.push_back(drv.NamedValues[bindings[i]->getName()]);
     drv.NamedValues[bindings[i]->getName()] = boundval;
-  }*/
+  }
   Value* blockValue;
   // Statements allocator
   for(int i=0; i<stmts.size(); i++){
     blockValue = stmts[i]->codegen(drv);
     if(!blockValue) return nullptr;
   }
-    
-  //for (int i=0; i<bindings.size();i++ )
-  //  drv.NamedValues[bindings[i]->getName()] = tmp[i]; //rimetto i valori originali della symb
+  
+  //rimetto i valori dello scope precedente
+  for (int i=0; i<bindings.size();i++ )
+    drv.NamedValues[bindings[i]->getName()] = tmp[i]; 
   
   // Ritorna l'ultimo valore
   return blockValue;   

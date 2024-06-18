@@ -21,13 +21,34 @@
 
 ## Theoretical Prerequisites
 
-Abstract Syntax Tree scheme:
+<b>Abstract Syntax Tree scheme</b>:
 
 <img src="img/tree_scheme.png" alt="liv1_1" width=50%></img>
 
+---
+
+<b>NamedValues (driver.cpp)</b>:
+
+It is a map of Driver class.
+```text
+
+Map = { <str,AllocaInst*> , <str,AllocaInst*> , ... }
+
+// Each <str> rappresent the name of a variable.
+
+```
+usage:
+
+```c++
+AllocaInst *A = drv.NamedValues[Name];
+if (!A)
+    return LogErrorV("Variabile non definita");
+return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
+```
 
 
 
+<br><br>
 ## Steps
 
 ### Grammar Level 1.0
@@ -148,6 +169,11 @@ Summary of each steps:
     "{"      return yy::parser::make_LPAREN_G  (loc);
     "}"      return yy::parser::make_RPAREN_G  (loc);
     ```
+
+
+
+
+#### Vardefs,Assignments and Binding (step1_2)
 
 
 

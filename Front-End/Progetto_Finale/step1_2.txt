@@ -1,0 +1,1 @@
+def somma(){var temp = 5; 3+3 };
