@@ -1,0 +1,33 @@
+DOMANDE ESAME:
+
+- Local Value Numbering.
+- Differenza tra analisi locali e globali.
+- Come implementare una Loop Fusion "proficient"?      (NOT DONE)
+
+- Come ha implementato la Loop Fusion?      
+- Concetti teorici Loop Fusion.
+- Reaching Definition Analysis (contesto DFA).
+
+- Come può il compilatore ottimizzare tramite l'uso della memoria?
+- Come si può avere parallelismo in questo contesto?     
+- Concetti teorici Prefetching.
+- Scrivere un caso di Prefetching dato un cache miss delay di 50 cicli macchina.
+- Scrivere un ciclo che generi solo cache misses. Come posso evitare di avere solo cache misses?
+- Altre ottimizzazioni sfruttando locality e reuse?
+- Illustrare il passo LLVM realizzato per LICM.
+- Condizioni di loop-invariance.
+- Condizioni per lo hoisting.
+
+- Loop Blocking.
+- Framework Constant Propagation.
+- Top Level Function del passo LLVM Loop Fusion realizzato.
+- Gestione della fusione di più di 2 loop.
+
+- ILP.
+- Rappresentazioni intermedie.
+- Induction Variables e forma SSA. PHI functions.
+- Commento file lowering & expansion generati con gcc -fopenmp.
+
+- Commento passo LLVM per Algebraic Identity.
+- Provare ad eseguire una DCE su codice ottimizzato tramite Algebraic Identity. Aggiungere un'istruzione con side effects per osservare la correttezza del passo.
+- Framework Available Expressions.
