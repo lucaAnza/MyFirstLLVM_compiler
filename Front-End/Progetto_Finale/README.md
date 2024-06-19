@@ -312,5 +312,68 @@ Summary of each steps:
 
 
 
+#### Global Variable (step1_3)
+
+1. Add <b>class</b>, <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
+
+    ```c++
+
+    ///////////////////////////////////CLASS//////////////////////////////////////////
+    %code requires {
+    ...
+    class GlobalVariableAST; //new
+    }
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+
+    %type <GlobalVariableAST*> globalvar;
+
+    ///////////////////////////////////RULES//////////////////////////////////////////
+
+    top:
+    %empty                  { $$ = nullptr; }   //old
+    | definition            { $$ = $1; }        //old
+    | external              { $$ = $1; }        //old
+    | globalvar             { $$ = $1; };       //<----------- Aggiunto new
+
+    globalvar:
+        "global" "id"         { $$ = new GlobalVariableAST($2); };
+
+    ```
+
+2. Add class header(<b>driver.hpp</b>)
+
+    ```c++
+    /// GlobalVariableAST
+    class GlobalVariableAST: public RootAST{
+    private:
+        std::string name;
+    public:
+        GlobalVariableAST(std::string name);
+        Value* codegen(driver& drv) override;
+        std::string& getName();
+    };
+    ```
+
+3. Add class implementation(<b>driver.cpp</b>)
+
+    ```c++
+
+    /*************************Global Variable******************************/
+    GlobalVariableAST::GlobalVariableAST(std::string name) : name(name){}
+    std::string& GlobalVariableAST::getName(){ return name; };
+    Value* GlobalVariableAST::codegen(driver &drv){
+    GlobalVariable *globVar;
+    globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullValue(Type::getDoubleTy(*context)), name);    
+    globVar->print(errs());
+    fprintf(stderr, "\n");
+    return globVar;
+    }
+        
+    ```
 
 
+
+### Grammar Level 2.0
+
+<span style="color:yellow">//  Work in progress..</span>

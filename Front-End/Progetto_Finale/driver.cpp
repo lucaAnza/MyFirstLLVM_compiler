@@ -388,3 +388,14 @@ Value* BlockAST::codegen(driver& drv){
   return blockValue;   
 };
 
+
+/*************************Global Variable******************************/
+GlobalVariableAST::GlobalVariableAST(std::string name) : name(name){}
+std::string& GlobalVariableAST::getName(){ return name; };
+Value* GlobalVariableAST::codegen(driver &drv){
+  GlobalVariable *globVar;
+  globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullValue(Type::getDoubleTy(*context)), name);    
+  globVar->print(errs());
+  fprintf(stderr, "\n");
+  return globVar;
+}

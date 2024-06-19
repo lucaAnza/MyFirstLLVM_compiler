@@ -182,8 +182,6 @@ class AssignmentAST : public ExprAST{
         ExprAST* getValue();
 };
 
-
-
 /// BlockAST
 class BlockAST : public ExprAST {
   private:
@@ -194,6 +192,17 @@ class BlockAST : public ExprAST {
   BlockAST(std::vector<ExprAST*> stmts);
   Value *codegen(driver& drv) override;
 };
+
+/// GlobalVariableAST
+class GlobalVariableAST: public RootAST{
+  private:
+    std::string name;
+  public:
+    GlobalVariableAST(std::string name);
+    Value* codegen(driver& drv) override;
+    std::string& getName();
+};
+
 
 
 #endif // ! DRIVER_HH

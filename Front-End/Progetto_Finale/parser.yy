@@ -22,6 +22,7 @@
   class BindingAST;
   class BlockAST;
   class AssignmentAST;
+  class GlobalVariableAST;
 }
 
 // The parsing context.
@@ -53,6 +54,7 @@
   EXTERN     "extern"
   DEF        "def"
   VAR        "var"
+  GLOBAL     "global"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -74,6 +76,7 @@
 %type <AssignmentAST*> assignment;
 %type <std::vector<BindingAST*>> vardefs;
 %type <BindingAST*> binding;
+%type <GlobalVariableAST*> globalvar;
 
 %%
 %start startsymb;
@@ -92,7 +95,8 @@ initexp:
 top:
 %empty                  { $$ = nullptr; }
 | definition            { $$ = $1; }
-| external              { $$ = $1; };
+| external              { $$ = $1; }
+| globalvar             { $$ = $1; };
 
 definition:
   "def" proto block       { $$ = new FunctionAST($2,$3); $2->noemit(); };
@@ -102,6 +106,9 @@ external:
 
 proto:
   "id" "(" idseq ")"    { $$ = new PrototypeAST($1,$3);  };
+
+globalvar:
+  "global" "id"         { $$ = new GlobalVariableAST($2); };
 
 idseq:
   %empty                { std::vector<std::string> args; $$ = args; }
