@@ -170,6 +170,18 @@ class BindingAST : public RootAST{
         ExprAST* getValue();
 };
 
+// Assignment - Classe che rappresenta un assignment (Ex: x = 13)
+class AssignmentAST : public ExprAST{
+    private:
+        std::string name;
+        ExprAST* val;
+    public:
+        AssignmentAST(std::string name , ExprAST *val);
+        AllocaInst* codegen(driver& drv);
+        std::string& getName();
+        ExprAST* getValue();
+};
+
 
 
 /// BlockAST

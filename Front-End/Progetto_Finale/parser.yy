@@ -21,6 +21,7 @@
   class PrototypeAST;
   class BindingAST;
   class BlockAST;
+  class AssignmentAST;
 }
 
 // The parsing context.
@@ -67,10 +68,10 @@
 %type <PrototypeAST*> proto
 %type <std::vector<std::string>> idseq
 %type <BlockAST*> block;
-%type <ExprAST*> initexp
 %type <std::vector<ExprAST*>> stmts;
 %type <ExprAST*> stmt;
-%type <ExprAST*> assignment;
+%type <ExprAST*> initexp
+%type <AssignmentAST*> assignment;
 %type <std::vector<BindingAST*>> vardefs;
 %type <BindingAST*> binding;
 
@@ -110,7 +111,7 @@ idseq:
 %left "+" "-";
 %left "*" "/";
 
-////////////////////////////////////// WORK IN PROGRESS... //////////////////////////////////////////////////////////
+////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
 stmts:
   stmt                 { std::vector<ExprAST*> statemets; statemets.insert(statemets.begin(),$1); $$ = statemets;}
 | stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
@@ -120,9 +121,8 @@ assignment                 { $$ = $1;}
 | block                    { $$ = $1;}
 | exp                      { $$ = $1;};
 
-/////////// TO DO
 assignment:
-  "id" "=" exp           { $$ = nullptr;};
+  "id" "=" exp           { $$ = new AssignmentAST($1,$3);};
 
 block:
   "{" stmts "}"                  { $$ = new BlockAST($2); };
@@ -135,7 +135,7 @@ vardefs:
 binding:
   "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
-////////////////////////////////////// WORK IN PROGRESS... //////////////////////////////////////////////////////////
+////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
 
 
 exp:

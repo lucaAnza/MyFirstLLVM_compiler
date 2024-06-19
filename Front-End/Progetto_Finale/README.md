@@ -175,90 +175,142 @@ Summary of each steps:
 
 #### Vardefs,Assignments and Binding (step1_2)
 
-
-
-
-
-
-
-/////////////////TO DO///////////////////////////
-#### Binding
-
-This is the first feature that we will implement.
-For this reason we add a rule in the grammar to have the possibility
-to create a programm made with only a Binding.
-So we can easily test it.
-<br>
-Summary of each steps:
-
-1. Add rules on grammar(</b>parser.yy<b>)
+1. Add <b>class</b>, <b>type</b>, <b>token</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
 
     ```c++
-    program:
-    %empty                { $$ = new SeqAST(nullptr,nullptr); }
-    |  top ";" program      { $$ = new SeqAST($1,$3); }
-    |  binding ";" program  { $$ = new SeqAST($1,$3); }
+
+    ///////////////////////////////////CLASS//////////////////////////////////////////
+    %code requires {
+    ...
+    class BindingAST;    //new
+    class AssignmentAST; //new
+    }
+
+    ///////////////////////////////////TOKEN//////////////////////////////////////////
+
+    %define api.token.prefix {TOK_}
+    %token
+    EQUAL      "="
+    ;
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+
+    %type <ExprAST*> initexp
+    %type <AssignmentAST*> assignment;
+    %type <std::vector<BindingAST*>> vardefs;
+    %type <BindingAST*> binding;
+
+    ///////////////////////////////////RULES//////////////////////////////////////////
+
+    stmts:
+    stmt                 { std::vector<ExprAST*> statemets; statemets.insert(statemets.begin(),$1); $$ = statemets;}
+    | stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
+
+    stmt:
+    assignment                 { $$ = $1;}
+    | block                    { $$ = $1;}
+    | exp                      { $$ = $1;};
+
+    assignment:
+    "id" "=" exp           { $$ = new AssignmentAST($1,$3);};
+
+    block:
+    "{" stmts "}"                  { $$ = new BlockAST($2); };
+    | "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2,$4); };
+
+    vardefs:
+    binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}
+    | vardefs ";" binding    { $1.insert($1.begin(),$3); $$ = $1; };
 
     binding:
-    "var" "id" initexp   { $$ = new Binding($2); };
+    "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
-    initexp:
-    %empty               { $$ = nullptr; }
-    | "=" exp              { $$ = $2; };
     ```
 
 2. Add class header(<b>driver.hpp</b>)
 
     ```c++
     // Binding - Classe che rappresenta un binding (Ex: var x = 7)
-    class Binding : public RootAST{
+    class BindingAST : public RootAST{
         private:
-            std::string type;
+            std::string name;
+            ExprAST* val;
         public:
-            Binding(std::string type);
-            std::string getType();
+            BindingAST(std::string name , ExprAST *val);
+            AllocaInst* codegen(driver& drv);
+            std::string& getName();
+            ExprAST* getValue();
+    };
+
+    // Assignment - Classe che rappresenta un assignment (Ex: x = 13)
+    class AssignmentAST : public ExprAST{
+        private:
+            std::string name;
+            ExprAST* val;
+        public:
+            AssignmentAST(std::string name , ExprAST *val);
+            AllocaInst* codegen(driver& drv);
+            std::string& getName();
+            ExprAST* getValue();
     };
     ```
 
 3. Add class implementation(<b>driver.cpp</b>)
 
     ```c++
-    // Implementazione della classe
-    Binding::Binding(std::string type): type(type) {std::cout<<"hi i am luca\n";};
-    std::string Binding::getType(){
-            std::cout<<"tipo =  "<<type<<"\n";
-            return type;
+
+    /************************* Binding **************************/
+    BindingAST::BindingAST(std::string name, ExprAST* val) : name(name), val(val) {};
+
+    //Getter
+    std::string& BindingAST::getName(){ return name; };
+    ExprAST* BindingAST::getValue(){ return val; };
+
+    //Methods
+    AllocaInst* BindingAST::codegen(driver& drv) {
+    Function *fun = builder->GetInsertBlock()->getParent();
+    Value* boundval;
+    if (val){
+        boundval = val->codegen(drv);
     }
+    else{
+        NumberExprAST* defaultVal = new NumberExprAST(0.0);
+        boundval = defaultVal->codegen(drv);
+    }
+    AllocaInst* Alloca = CreateEntryBlockAlloca(fun,name);
+    builder->CreateStore(boundval,Alloca);
+    return Alloca;
+    };
+
+    /************************* Assignment **************************/
+    AssignmentAST::AssignmentAST(std::string name , ExprAST* val) : name(name) , val(val) {};
+
+    //Getter
+    std::string& AssignmentAST::getName(){ return name; };
+    ExprAST* AssignmentAST::getValue(){ return val; };
+
+    //Methods
+    AllocaInst* AssignmentAST::codegen(driver& drv) {
+    AllocaInst *Alloca = drv.NamedValues[name];
+    if (!Alloca){
+        printf("Variabile non definita!\n");
+        return nullptr;
+    }
+
+    Value* boundval = val->codegen(drv);  //Ottenimento valore associato alla variabile
+    builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
+    return Alloca;
+    };
+        
     ```
 
-4. Add type on parser,the eventually new token and the class use(</b>parser.yy<b>)
+4. Add token on <b>scanner.ll</b>
 
     ```c++
-    //class
-    %code requires {
-    #include <string>
-    #include <exception>
-    ...
-    class BindingAST;
-    ...
-    }
-
-    //type
-    %type <Binding*> binding
-    %type <ExprAST*> initexp
-
-    //token
-    %define api.token.prefix {TOK_}
-    %token
-    ...
-    EQUAL      "="
-    ...
-    ;
+    "="      return yy::parser::make_EQUAL     (loc);
     ```
 
-5. Add token on <b>scanner.ll</b>
-
-    `"="      return yy::parser::make_EQUAL     (loc);`
 
 
-#### Block
+
+

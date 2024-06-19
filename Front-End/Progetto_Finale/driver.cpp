@@ -328,6 +328,25 @@ AllocaInst* BindingAST::codegen(driver& drv) {
 };
 
 
+AssignmentAST::AssignmentAST(std::string name , ExprAST* val) : name(name) , val(val) {};
+
+//Getter
+std::string& AssignmentAST::getName(){ return name; };
+ExprAST* AssignmentAST::getValue(){ return val; };
+
+//Methods
+AllocaInst* AssignmentAST::codegen(driver& drv) {
+  AllocaInst *Alloca = drv.NamedValues[name];
+  if (!Alloca){
+     printf("Variabile non definita!\n");
+     return nullptr;
+  }
+
+  Value* boundval = val->codegen(drv);  //Ottenimento valore associato alla variabile
+  builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
+  return Alloca;
+};
+
 
 
 /*************************Block******************************/
