@@ -5,7 +5,7 @@ COMANDI UTILI
 INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
 
 # Creazione CFG Draw
-BUILD/bin/opt -p=dot-cfg TEST/LF_simplified.ll -o TEST/dot.dot
+BUILD/bin/opt -p=dot-cfg input.ll -o grafo.dot
 dot -Tpng grafo.dot -o grafo.png
 
 # Ottimizazione di tipo mem2reg
@@ -53,11 +53,13 @@ rm optimezed_temp.bc
 
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_pass TEST/LICM.ll -disable-output 
+INSTALL/bin/opt -p loop_pass TEST/source_ll/LICM.ll -disable-output   (NO-OUTPUT)
+--------------------or---------------------------------------------
+INSTALL/bin/opt -p loop_pass TEST/source_ll/LICM.ll -o LICM_opt.bc
 INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
 
 #Assignment-4 (Loop Fusion)
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_fusion TEST/LFm2r.ll -disable-output 
+INSTALL/bin/opt -p loop_fusion TEST/source_ll/LFm2r.ll -disable-output         (NO-OUTPUT)
 INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll

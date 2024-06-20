@@ -1,0 +1,21 @@
+digraph "CFG for 'foo' function" {
+	label="CFG for 'foo' function";
+
+	Node0x55e6473af070 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#abc8fd70",label="{%2:\l  br label %3\l}"];
+	Node0x55e6473af070 -> Node0x55e6473af0c0;
+	Node0x55e6473af0c0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%3:\l3:                                                \l  %.05 = phi i32 [ 0, %2 ], [ %21, %17 ]\l  %.04 = phi i32 [ 0, %2 ], [ %19, %17 ]\l  %.03 = phi i32 [ 0, %2 ], [ %18, %17 ]\l  %.01 = phi i32 [ 9, %2 ], [ %.1, %17 ]\l  %.0 = phi i32 [ %1, %2 ], [ %4, %17 ]\l  %4 = add nsw i32 %.0, 1\l  %5 = add nsw i32 %0, 3\l  %6 = add nsw i32 %0, 7\l  %7 = icmp slt i32 %4, 5\l  br i1 %7, label %8, label %11\l|{<s0>T|<s1>F}}"];
+	Node0x55e6473af0c0:s0 -> Node0x55e6473b2450;
+	Node0x55e6473af0c0:s1 -> Node0x55e6473b24a0;
+	Node0x55e6473b2450 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#dc5d4a70",label="{%8:\l8:                                                \l  %9 = add nsw i32 %.01, 2\l  %10 = add nsw i32 %0, 3\l  br label %17\l}"];
+	Node0x55e6473b2450 -> Node0x55e6473af020;
+	Node0x55e6473b24a0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#dc5d4a70",label="{%11:\l11:                                               \l  %12 = sub nsw i32 %.01, 1\l  %13 = add nsw i32 %0, 4\l  %14 = icmp sge i32 %4, 10\l  br i1 %14, label %15, label %16\l|{<s0>T|<s1>F}}"];
+	Node0x55e6473b24a0:s0 -> Node0x55e6473b2220;
+	Node0x55e6473b24a0:s1 -> Node0x55e6473b2a40;
+	Node0x55e6473b2220 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#abc8fd70",label="{%15:\l15:                                               \l  br label %22\l}"];
+	Node0x55e6473b2220 -> Node0x55e6473b2b40;
+	Node0x55e6473b2a40 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#de614d70",label="{%16:\l16:                                               \l  br label %17\l}"];
+	Node0x55e6473b2a40 -> Node0x55e6473af020;
+	Node0x55e6473af020 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%17:\l17:                                               \l  %.02 = phi i32 [ %10, %8 ], [ %13, %16 ]\l  %.1 = phi i32 [ %9, %8 ], [ %12, %16 ]\l  %18 = add nsw i32 %5, 7\l  %19 = add nsw i32 %.02, 2\l  %20 = add nsw i32 %0, 7\l  %21 = add nsw i32 %6, 5\l  br label %3\l}"];
+	Node0x55e6473af020 -> Node0x55e6473af0c0;
+	Node0x55e6473b2b40 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#abc8fd70",label="{%22:\l22:                                               \l  %23 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %12, i32\l... noundef %13, i32 noundef %.03, i32 noundef %.04, i32 noundef %6, i32 noundef\l... %.05, i32 noundef %5, i32 noundef %4)\l  ret void\l}"];
+}
