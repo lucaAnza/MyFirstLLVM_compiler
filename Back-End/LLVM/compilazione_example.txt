@@ -53,13 +53,19 @@ rm optimezed_temp.bc
 
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_pass TEST/source_ll/LICM.ll -disable-output   (NO-OUTPUT)
+
+INSTALL/bin/opt -p loop_pass TEST/source_ll/Assignment3/LICM.ll -disable-output   (NO-OUTPUT)
 --------------------or---------------------------------------------
-INSTALL/bin/opt -p loop_pass TEST/source_ll/LICM.ll -o LICM_opt.bc
+INSTALL/bin/opt -p loop_pass TEST/source_ll/Assignment3/LICM.ll -o LICM_opt.bc
+
 INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
 
 #Assignment-4 (Loop Fusion)
 make opt (/BUILD)
 make install (/BUILD)
-INSTALL/bin/opt -p loop_fusion TEST/source_ll/LFm2r.ll -disable-output         (NO-OUTPUT)
+
+INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -disable-output   (NO-OUTPUT)
+--------------------or---------------------------------------------
+INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -o LF_b.bc   
+
 INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll
