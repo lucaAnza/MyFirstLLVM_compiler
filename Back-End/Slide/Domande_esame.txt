@@ -1,17 +1,20 @@
 DOMANDE ESAME:
 
-- Local Value Numbering.
-- Differenza tra analisi locali e globali.
-- Come implementare una Loop Fusion "proficient"?      (NOT DONE)
+1. Local Value Numbering -> Studied ✓  [slide06]
 
-- Come ha implementato la Loop Fusion?      
-- Concetti teorici Loop Fusion.
-- Reaching Definition Analysis (contesto DFA).
+2. Differenza tra analisi locali e globali -> Studied ✓  [slide06]
 
-- Come può il compilatore ottimizzare tramite l'uso della memoria?
-- Come si può avere parallelismo in questo contesto?     
-- Concetti teorici Prefetching.
-- Scrivere un caso di Prefetching dato un cache miss delay di 50 cicli macchina.
+3. Come ha implementato la Loop Fusion?  ->  ///////////////////////////////////////////////////////// TO DO   
+
+4. Concetti teorici Loop Fusion -> Studied ✓  [slide12 + slide13]
+
+5. Reaching Definition Analysis (contesto DFA) ///////////////////////////////////////////////// To Study better
+
+6. Come può il compilatore ottimizzare tramite l'uso della memoria?  [slide12]
+
+7. Concetti teorici Prefetching [slide12] Studied ✓
+ 
+8. Scrivere un caso di Prefetching dato un cache miss delay di 50 cicli macchina.  //////////////////////////////// TO DO
 - Scrivere un ciclo che generi solo cache misses. Come posso evitare di avere solo cache misses?
 - Altre ottimizzazioni sfruttando locality e reuse?
 - Illustrare il passo LLVM realizzato per LICM.
@@ -31,3 +34,9 @@ DOMANDE ESAME:
 - Commento passo LLVM per Algebraic Identity.
 - Provare ad eseguire una DCE su codice ottimizzato tramite Algebraic Identity. Aggiungere un'istruzione con side effects per osservare la correttezza del passo.
 - Framework Available Expressions.
+
+
+Question-hard{NOT-DONE}:
+
+1. Come implementare una Loop Fusion "proficient"?   
+2. Come si può avere parallelismo in questo contesto?      
