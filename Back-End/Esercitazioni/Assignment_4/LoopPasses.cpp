@@ -1,4 +1,4 @@
-#include "llvm/Transforms/Utils/LoopFusionPass.h"
+#include "llvm/Transforms/Utils/LoopPasses.h"
 #include "llvm/Analysis/DependenceAnalysis.h"
 #include "llvm/Analysis/DominanceFrontier.h"
 #include "llvm/Analysis/LoopInfo.h"
@@ -250,7 +250,7 @@ Loop *fuseLoop(Loop *L1, Loop *L2) {
   return L1;
 }
 
-PreservedAnalyses LoopFusionPass::run(Function &F,
+PreservedAnalyses LoopPasses::run(Function &F,
                                       FunctionAnalysisManager &AM) {
   outs() << "\n";
   outs() << "\nStart loop fusion opt...\n";
