@@ -1,42 +1,61 @@
+MODALITÀ ESAME:
+
+3 Domande: 2Teoria + 1Progetto/Assignment.
+
 DOMANDE ESAME:
 
 1. Local Value Numbering -> Studied ✓  [slide06]
 
 2. Differenza tra analisi locali e globali -> Studied ✓  [slide06]
 
-3. Come ha implementato la Loop Fusion?  ->  ///////////////////////////////////////////////////////// TO DO   
+3. Come ha implementato la Loop Fusion?  ->  Studied ✓ [slide13]
 
 4. Concetti teorici Loop Fusion -> Studied ✓  [slide12 + slide13]
 
 5. Reaching Definition Analysis (contesto DFA) ///////////////////////////////////////////////// To Study better
 
-6. Come può il compilatore ottimizzare tramite l'uso della memoria?  [slide12]
+6. Come può il compilatore ottimizzare tramite l'uso della memoria? Studied ✓ [slide12]
 
 7. Concetti teorici Prefetching [slide12] Studied ✓
  
 8. Scrivere un caso di Prefetching dato un cache miss delay di 50 cicli macchina.  //////////////////////////////// TO DO
-- Scrivere un ciclo che generi solo cache misses. Come posso evitare di avere solo cache misses?
-- Altre ottimizzazioni sfruttando locality e reuse?
-- Illustrare il passo LLVM realizzato per LICM.
-- Condizioni di loop-invariance.
-- Condizioni per lo hoisting.
 
-- Loop Blocking.
-- Framework Constant Propagation.
-- Top Level Function del passo LLVM Loop Fusion realizzato.
-- Gestione della fusione di più di 2 loop.
+9. Scrivere un ciclo che generi solo cache misses. Come posso evitare di avere solo cache misses? Studied ✓
 
-- ILP.
-- Rappresentazioni intermedie.
-- Induction Variables e forma SSA. PHI functions.
-- Commento file lowering & expansion generati con gcc -fopenmp.
+10. Illustrare il passo LLVM realizzato per LICM. [slide12] Studied ✓
 
-- Commento passo LLVM per Algebraic Identity.
-- Provare ad eseguire una DCE su codice ottimizzato tramite Algebraic Identity. Aggiungere un'istruzione con side effects per osservare la correttezza del passo.
-- Framework Available Expressions.
+11. Altre ottimizzazioni sfruttando locality e reuse?  [slide12] Studied ✓
+
+12. Condizioni di loop-invariance. [slide12] Studied ✓
+
+13. Framework Constant Propagation.
+
+14. Framework Available Expressions.
+
+15. Commento passo LLVM per Algebraic Identity. [Assignment1] Studied ✓
+
+16. Induction Variables e forma SSA. PHI functions. [Slide10 e Slide13] Studied ✓
+
+17. Rappresentazioni intermedie. [Slide2] Studied ✓
+
+18. Top Level Function del passo LLVM Loop Fusion realizzato.
+
+19. Gestione della fusione di più di 2 loop.
+
+20. Provare ad eseguire una DCE su codice ottimizzato tramite Algebraic Identity. Aggiungere un'istruzione con side effects per osservare la correttezza del passo.
+
+21. Fare un passo di Loop Interchange.
+   - invertire header e latch dei due loop.
+   - ⁠invertire gli usi delle induction variable all’interno del body del loop.
+
+
 
 
 Question-hard{NOT-DONE}:
 
 1. Come implementare una Loop Fusion "proficient"?   
-2. Come si può avere parallelismo in questo contesto?      
+2. Come si può avere parallelismo in questo contesto? 
+3. Condizioni per lo hoisting.     
+4. Loop Blocking.
+5. Commento file lowering & expansion generati con gcc -fopenmp.
+6. ILP (Istruction Level Parallelism).

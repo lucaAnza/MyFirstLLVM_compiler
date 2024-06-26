@@ -1,4 +1,4 @@
-NAME="LoopFusionPass"
+NAME="LoopPasses"
 
 
 

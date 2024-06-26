@@ -66,6 +66,6 @@ make install (/BUILD)
 
 INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -disable-output   (NO-OUTPUT)
 --------------------or---------------------------------------------
-INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -o LF_b.bc   
+INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -o LF.bc   
 
 INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll
