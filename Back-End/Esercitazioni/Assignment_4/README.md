@@ -1,5 +1,26 @@
 # <center> Assignment 4 </center>
 
+## How to compile:
+
+```bash
+#Generazione file .ll dal sorgente .c
+INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c/LICM.c -o LF.ll -Xclang -disable-O0-optnone 
+
+#Ottimizazione di tipo mem to reg
+INSTALL/bin/opt -p=mem2reg LF.ll -o LFm2r.ll
+
+#Creazione file bytecode
+INSTALL/bin/opt -p loop_fusion TEST/source_ll/Assignment4/LFm2r.ll -o LF.bc
+
+#Trasformazione file binario in .ll
+INSTALL/bin/llvm-dis LF.bc -o LF_opt.ll
+
+#Generazione CFG
+INSTALL/bin/opt -p=dot-cfg LF_opt.ll > /dev/null
+mv \.twoloops.dot ./grafo.dot
+dot -Tpng grafo.dot -o CFG_Optimized.png
+```
+
 ## Consegna:
 
 • Implementare un passo di Loop Fusion.

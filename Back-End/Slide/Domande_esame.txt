@@ -12,7 +12,7 @@ DOMANDE ESAME:
 
 4. Concetti teorici Loop Fusion -> Studied ✓  [slide12 + slide13]
 
-5. Reaching Definition Analysis (contesto DFA) ///////////////////////////////////////////////// To Study better
+5. Reaching Definition Analysis (contesto DFA)  Studied ✓
 
 6. Come può il compilatore ottimizzare tramite l'uso della memoria? Studied ✓ [slide12]
 
@@ -28,9 +28,9 @@ DOMANDE ESAME:
 
 12. Condizioni di loop-invariance. [slide12] Studied ✓
 
-13. Framework Constant Propagation.
+13. Framework Constant Propagation. Studied ✓
 
-14. Framework Available Expressions.
+14. Framework Available Expressions. Studied ✓
 
 15. Commento passo LLVM per Algebraic Identity. [Assignment1] Studied ✓
 
