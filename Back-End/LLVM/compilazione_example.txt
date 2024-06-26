@@ -5,8 +5,9 @@ COMANDI UTILI
 INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
 
 # Creazione CFG Draw
-BUILD/bin/opt -p=dot-cfg input.ll -o grafo.dot
-dot -Tpng grafo.dot -o grafo.png
+INSTALL/bin/opt -p=dot-cfg input.ll > /dev/null
+mv \.result.dot ./grafo.dot
+dot -Tpng grafo.dot -o CFG.png
 
 # Ottimizazione di tipo mem2reg
 INSTALL/bin/opt -p=mem2reg <input>.ll -o temp.bc 
