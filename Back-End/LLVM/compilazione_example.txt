@@ -2,7 +2,7 @@
 COMANDI UTILI
 ----------------------------------------------------------------
 # Creazione file .ll
-INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c_files/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
+INSTALL/bin/clang -S -emit-llvm -O0 TEST/source_c/LICM.c -o LICM_no_opt.ll -Xclang -disable-O0-optnone
 
 # Creazione CFG Draw
 INSTALL/bin/opt -p=dot-cfg input.ll > /dev/null
@@ -10,9 +10,7 @@ mv \.result.dot ./grafo.dot
 dot -Tpng grafo.dot -o CFG.png
 
 # Ottimizazione di tipo mem2reg
-INSTALL/bin/opt -p=mem2reg <input>.ll -o temp.bc 
-INSTALL/bin/llvm-dis temp.bc -o <output>.ll
-rm temp.bc
+INSTALL/bin/opt -p=mem2reg <input>.ll -o <output>.ll
 
 ----------------------------------------------------------------
 ESERCITAZIONI
