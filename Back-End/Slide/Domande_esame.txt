@@ -45,8 +45,8 @@ DOMANDE ESAME:
 20. Provare ad eseguire una DCE su codice ottimizzato tramite Algebraic Identity. Aggiungere un'istruzione con side effects per osservare la correttezza del passo.
 
 21. Fare un passo di Loop Interchange.
-   - invertire header e latch dei due loop.
-   - ⁠invertire gli usi delle induction variable all’interno del body del loop.
+   - invertire header e latch dei due loop. 
+   - ⁠invertire gli usi delle induction variable all’interno del body del loop.  (oppure)
 
 
 
