@@ -59,7 +59,7 @@ INSTALL/bin/opt -p loop_pass TEST/source_ll/Assignment3/LICM.ll -disable-output 
 --------------------or---------------------------------------------
 INSTALL/bin/opt -p loop_pass TEST/source_ll/Assignment3/LICM.ll -o LICM_opt.bc
 
-INSTALL/bin/llvm-dis LICM.bc -o LICM_opt.ll
+INSTALL/bin/llvm-dis LICM_opt.bc -o LICM_opt.ll
 
 #Assignment-4 (Loop Fusion)
 make opt (/BUILD)
