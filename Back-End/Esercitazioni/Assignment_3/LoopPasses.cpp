@@ -223,6 +223,7 @@ PreservedAnalyses LoopPasses::run(Loop &L, LoopAnalysisManager &LAM, LoopStandar
       }
 
       if (isLoopInvariant == true) {
+        outs()<<"L'istruzione : "<<I<<" è loop invariant!"<<"\n";
         loop_invariant_instructions.insert(&I);
       }
     }

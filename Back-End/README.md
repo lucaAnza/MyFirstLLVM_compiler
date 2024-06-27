@@ -1,3 +1,46 @@
+# Middle-end optimizations
+
+In this directory you can find some optimizations on IR Code.<br>
+Each optimization is made modifying LLVM source code or creating a new pass.<br>
+<br>
+
+_middle-end function:_
+
+<img src="Slide/img/compiler_anatomy.png" width=50%></img>
+
+<img src="Slide/img/compiler_anatomy2.png" width=50%></img>
+
+---
+
+### Which optimizations or analysis?
+
+#### Assignment1(optimization-LLVM)
+
+- Algebric Identity.
+- Strengh Reduction.
+- Multi Instructions opt.
+
+#### Assignment2(analiysis)
+
+->Data Flow Analysis on three different case:
+
+- Constant Propagation.
+- Dominator Analysis.
+- Very Busy Expressions.
+
+#### Assignment3(optimization-LLVM)
+
+- LICM (Loop Invariant Code Motion).
+
+#### Assignment4(optimization-LLVM)
+
+- LI (Loop Fusion).
+
+
+
+
+<br><br><br>
+
 # How to install LLVM last version ? 
 
 ### 1. Scarica zip -> https://github.com/llvm/llvm-project/releases/tag/llvmorg-17.0.6

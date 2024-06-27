@@ -48,6 +48,13 @@ DOMANDE ESAME:
    - invertire header e latch dei due loop. 
    - ⁠invertire gli usi delle induction variable all’interno del body del loop.  (oppure)
 
+22. Mi parli delle rappresentazioni intermedie. Pro e Contro. Ambiti dove ciascuna è più indicata.
+23. Mi spiega com'è rappresentato un Loop Naturale in una forma di rappresentazione di tipo 3AS o SSA. Cose fondamentali deve avere un loop? (Preheader,Header,Latch...)
+
+24. Mi parli delle Loop Invariant code motion. Algoritmo LICM. 
+
+25. Crea al volo un esempio in c di un istruzione loop invariant. Trasformalo in IR e poi eseguilo sul passo dell'assignment3.
+
 
 
 

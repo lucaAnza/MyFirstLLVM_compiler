@@ -208,12 +208,3 @@ PreservedAnalyses TestPass::run(Module &M,
 4.Modificare il passBuilder -> `/LLVM/SRC/llvm-project-llvmorg-17.0.6/llvm/lib/Passes/PassRegistry.def`
 
 `FUNCTION_PASS("testpass", TestPass())`   --->   `MODULE_PASS("testpass", TestPass())`
-
-
-
-
-
-
-## DUBBI
-
-1. Perchè bisogna includere <llvm/IR/Instructions.h> , mentre per Instruction,BasicBlock,... non serve?

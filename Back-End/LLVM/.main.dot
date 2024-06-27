@@ -1,5 +1,0 @@
-digraph "CFG for 'main' function" {
-	label="CFG for 'main' function";
-
-	Node0x55c19ef0b840 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%0:\l  call void @foo(i32 noundef 0, i32 noundef 4)\l  call void @foo(i32 noundef 0, i32 noundef 12)\l  ret i32 0\l}"];
-}
