@@ -23,6 +23,7 @@
   class BlockAST;
   class AssignmentAST;
   class GlobalVariableAST;
+  class IFstmsAST;
 }
 
 // The parsing context.
@@ -51,6 +52,8 @@
   EQUAL      "="
   LPAREN_G   "{"
   RPAREN_G   "}"
+  EQUAL_if   "=="
+  LESS_if    "<"
   EXTERN     "extern"
   DEF        "def"
   VAR        "var"
@@ -77,6 +80,8 @@
 %type <std::vector<BindingAST*>> vardefs;
 %type <BindingAST*> binding;
 %type <GlobalVariableAST*> globalvar;
+%type <IFstmsAST*> expif;
+%type <ExprAST*> condexp;
 
 %%
 %start startsymb;
@@ -152,7 +157,21 @@ exp:
 | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); }
 | idexp                 { $$ = $1; }
 | "(" exp ")"           { $$ = $2; }
-| "number"              { $$ = new NumberExprAST($1); };
+| "number"              { $$ = new NumberExprAST($1); }
+| expif                 { $$ = $1; };
+
+
+////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
+
+expif:
+  condexp "?" exp ":" exp   { $$ = new IFstmsAST($3,$5,$1);};
+
+condexp:
+  exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
+| exp "==" exp              { $$ = new BinaryExprAST('=',$1,$3); }
+
+////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
+
 
 idexp:
   "id"                  { $$ = new VariableExprAST($1); }

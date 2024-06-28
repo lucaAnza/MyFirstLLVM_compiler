@@ -44,6 +44,8 @@ blank   [ \t]
 "="      return yy::parser::make_EQUAL     (loc);
 "{"      return yy::parser::make_LPAREN_G  (loc);
 "}"      return yy::parser::make_RPAREN_G  (loc);
+"<"      return yy::parser::make_LESS_if      (loc);
+"=="      return yy::parser::make_EQUAL_if      (loc);
 
 {num}    { errno = 0;
            double n = strtod(yytext, NULL);

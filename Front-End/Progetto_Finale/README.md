@@ -70,6 +70,7 @@ Feature:
 4. Assignments
 5. Init of local variable.
 6. Init of global variable.
+7. Condition(IF).
     
 <br>
 
@@ -372,6 +373,14 @@ Summary of each steps:
         
     ```
 
+# Expif and Condexp
+
+4. Add token on <b>scanner.ll</b>
+
+    ```c++
+    "<"      return yy::parser::make_LESS_if       (loc);
+    "=="      return yy::parser::make_EQUAL_if     (loc);
+    ```
 
 
 ### Grammar Level 2.0

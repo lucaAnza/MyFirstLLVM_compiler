@@ -131,6 +131,10 @@ Value *BinaryExprAST::codegen(driver& drv) {
     return builder->CreateFMul(L,R,"mulres");
   case '/':
     return builder->CreateFDiv(L,R,"addres");
+  case '<':
+    return builder->CreateFCmpULT(L,R,"lessIF");
+  case '=':
+    return builder->CreateFCmpUEQ(L,R,"equalIF");
   default:  
     std::cout << Op << std::endl;
     return LogErrorV("Operatore binario non supportato");
@@ -399,3 +403,18 @@ Value* GlobalVariableAST::codegen(driver &drv){
   fprintf(stderr, "\n");
   return globVar;
 }
+
+
+/*************************IF Expr******************************/
+IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
+Value* IFstmsAST::codegen(driver &drv){
+    //TO DO - to implement
+    return nullptr;
+};
+
+
+
+
+
+
+
