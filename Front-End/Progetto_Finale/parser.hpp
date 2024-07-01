@@ -778,12 +778,14 @@ namespace yy {
     TOK_RPAREN_G = 268,            // "}"
     TOK_EQUAL_if = 269,            // "=="
     TOK_LESS_if = 270,             // "<"
-    TOK_EXTERN = 271,              // "extern"
-    TOK_DEF = 272,                 // "def"
-    TOK_VAR = 273,                 // "var"
-    TOK_GLOBAL = 274,              // "global"
-    TOK_IDENTIFIER = 275,          // "id"
-    TOK_NUMBER = 276               // "number"
+    TOK_CONDITION = 271,           // "?"
+    TOK_CONDITION_SEPARATOR = 272, // ":"
+    TOK_EXTERN = 273,              // "extern"
+    TOK_DEF = 274,                 // "def"
+    TOK_VAR = 275,                 // "var"
+    TOK_GLOBAL = 276,              // "global"
+    TOK_IDENTIFIER = 277,          // "id"
+    TOK_NUMBER = 278               // "number"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -818,14 +820,14 @@ namespace yy {
         S_RPAREN_G = 13,                         // "}"
         S_EQUAL_if = 14,                         // "=="
         S_LESS_if = 15,                          // "<"
-        S_EXTERN = 16,                           // "extern"
-        S_DEF = 17,                              // "def"
-        S_VAR = 18,                              // "var"
-        S_GLOBAL = 19,                           // "global"
-        S_IDENTIFIER = 20,                       // "id"
-        S_NUMBER = 21,                           // "number"
-        S_22_ = 22,                              // "?"
-        S_23_ = 23,                              // ":"
+        S_CONDITION = 16,                        // "?"
+        S_CONDITION_SEPARATOR = 17,              // ":"
+        S_EXTERN = 18,                           // "extern"
+        S_DEF = 19,                              // "def"
+        S_VAR = 20,                              // "var"
+        S_GLOBAL = 21,                           // "global"
+        S_IDENTIFIER = 22,                       // "id"
+        S_NUMBER = 23,                           // "number"
         S_YYACCEPT = 24,                         // $accept
         S_startsymb = 25,                        // startsymb
         S_program = 26,                          // program
@@ -1353,8 +1355,7 @@ switch (yykind)
       {
 #if !defined _MSC_VER || defined __clang__
         YY_ASSERT (tok == token::TOK_END
-                   || (token::TOK_YYerror <= tok && tok <= token::TOK_GLOBAL)
-                   || (277 <= tok && tok <= 278));
+                   || (token::TOK_YYerror <= tok && tok <= token::TOK_GLOBAL));
 #endif
       }
 #if 201103L <= YY_CPLUSPLUS
@@ -1667,6 +1668,36 @@ switch (yykind)
       make_LESS_if (const location_type& l)
       {
         return symbol_type (token::TOK_LESS_if, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_CONDITION (location_type l)
+      {
+        return symbol_type (token::TOK_CONDITION, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_CONDITION (const location_type& l)
+      {
+        return symbol_type (token::TOK_CONDITION, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_CONDITION_SEPARATOR (location_type l)
+      {
+        return symbol_type (token::TOK_CONDITION_SEPARATOR, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_CONDITION_SEPARATOR (const location_type& l)
+      {
+        return symbol_type (token::TOK_CONDITION_SEPARATOR, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -2384,7 +2415,7 @@ switch (yykind)
 
 
 } // yy
-#line 2388 "parser.hpp"
+#line 2419 "parser.hpp"
 
 
 

@@ -397,19 +397,48 @@ Value* BlockAST::codegen(driver& drv){
 GlobalVariableAST::GlobalVariableAST(std::string name) : name(name){}
 std::string& GlobalVariableAST::getName(){ return name; };
 Value* GlobalVariableAST::codegen(driver &drv){
-  GlobalVariable *globVar;
-  globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullValue(Type::getDoubleTy(*context)), name);    
-  globVar->print(errs());
-  fprintf(stderr, "\n");
-  return globVar;
+    GlobalVariable *globVar;
+    globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullValue(Type::getDoubleTy(*context)), name);    
+    globVar->print(errs());
+    fprintf(stderr, "\n");
+    return globVar;
 }
 
 
 /*************************IF Expr******************************/
 IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
 Value* IFstmsAST::codegen(driver &drv){
-    //TO DO - to implement
-    return nullptr;
+    
+    Value *cond = condition->codegen(drv);
+    if(!cond)
+        return nullptr;
+
+    Function *fun = builder->GetInsertBlock()->getParent();
+    BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+    BasicBlock *FalseBB = BasicBlock::Create(*context, "false_BB", fun);
+    BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+    builder->CreateCondBr(cond, TrueBB, FalseBB);
+
+    //Set TrueBB writing BasicBlock
+    builder->SetInsertPoint(TrueBB);
+    Value* trueValue = trueExpr->codegen(drv);
+    if(!trueValue) return nullptr;
+    builder->CreateBr(MergeBB);
+    //fun->insert(fun->end(), FalseBB);
+
+    //Set FalseBB writing BasicBlock
+    builder->SetInsertPoint(FalseBB);
+    Value* falseValue = falseExpr->codegen(drv);
+    if(!falseValue) return nullptr;
+    builder->CreateBr(MergeBB);
+
+    //Set MergeBB writing BasicBlock
+    builder->SetInsertPoint(MergeBB);
+    PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+    P-> addIncoming(trueValue, TrueBB);
+    P-> addIncoming(falseValue, FalseBB);
+    return P;
+
 };
 
 

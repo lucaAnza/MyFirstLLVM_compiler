@@ -375,11 +375,115 @@ Summary of each steps:
 
 # Expif and Condexp
 
+1. Add <b>class</b>, <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
+
+    ```c++
+
+    ///////////////////////////////////CLASS//////////////////////////////////////////
+    %code requires {
+    ...
+    class IFstmsAST; //new
+    }
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+
+    %type <IFstmsAST*> expif;
+    %type <ExprAST*> condexp;
+
+    ///////////////////////////////////RULES//////////////////////////////////////////
+
+    exp:                                                           //old
+    exp "+" exp           { $$ = new BinaryExprAST('+',$1,$3); }   //old
+    | exp "-" exp           { $$ = new BinaryExprAST('-',$1,$3); } //old
+    | exp "*" exp           { $$ = new BinaryExprAST('*',$1,$3); } //old
+    | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); } //old
+    | idexp                 { $$ = $1; }                           //old
+    | "(" exp ")"           { $$ = $2; }                           //old
+    | "number"              { $$ = new NumberExprAST($1); }        //old
+    | expif                 { $$ = $1; };                          //<------ added(new)
+
+    /// All-new
+    expif:
+    condexp "?" exp ":" exp   { $$ = new IFstmsAST($3,$5,$1);};
+
+    condexp:
+    exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
+    | exp "==" exp              { $$ = new BinaryExprAST('=',$1,$3); }
+
+    ```
+2. Add class header(<b>driver.hpp</b>)
+
+    ```c++
+    /// IFstmsAST
+    class IFstmsAST: public ExprAST{
+    private:
+        ExprAST* trueExpr;
+        ExprAST* falseExpr;
+        ExprAST* condition;
+
+    public:
+        IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition);
+        Value* codegen(driver& drv) override;
+    };
+    ```
+
+3. Add class implementation(<b>driver.cpp</b>)
+
+    ```c++
+    /******************** Binary Expression Tree **********************/
+    //Modified- Binary Expression Tree
+    //Added the following code on the main switch. 
+    case '<':
+        return builder->CreateFCmpULT(L,R,"lessIF");
+    case '=':
+        return builder->CreateFCmpUEQ(L,R,"equalIF");
+
+        
+
+    /*************************IF Expr******************************/
+    IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
+    Value* IFstmsAST::codegen(driver &drv){
+        
+        Value *cond = condition->codegen(drv);
+        if(!cond)
+            return nullptr;
+
+        Function *fun = builder->GetInsertBlock()->getParent();
+        BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+        BasicBlock *FalseBB = BasicBlock::Create(*context, "false_BB", fun);
+        BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+        builder->CreateCondBr(cond, TrueBB, FalseBB);
+
+        //Set TrueBB writing BasicBlock
+        builder->SetInsertPoint(TrueBB);
+        Value* trueValue = trueExpr->codegen(drv);
+        if(!trueValue) return nullptr;
+        builder->CreateBr(MergeBB);
+        //fun->insert(fun->end(), FalseBB);
+
+        //Set FalseBB writing BasicBlock
+        builder->SetInsertPoint(FalseBB);
+        Value* falseValue = falseExpr->codegen(drv);
+        if(!falseValue) return nullptr;
+        builder->CreateBr(MergeBB);
+
+        //Set MergeBB writing BasicBlock
+        builder->SetInsertPoint(MergeBB);
+        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+        P-> addIncoming(trueValue, TrueBB);
+        P-> addIncoming(falseValue, FalseBB);
+        return P;
+
+    };
+    ```
+
 4. Add token on <b>scanner.ll</b>
 
     ```c++
-    "<"      return yy::parser::make_LESS_if       (loc);
-    "=="      return yy::parser::make_EQUAL_if     (loc);
+    "<"      return yy::parser::make_LESS_if                 (loc);
+    "=="     return yy::parser::make_EQUAL_if                (loc);
+    "?"      return yy::parser::make_CONDITION               (loc);
+    ":"      return yy::parser::make_CONDITION_SEPARATOR     (loc);
     ```
 
 

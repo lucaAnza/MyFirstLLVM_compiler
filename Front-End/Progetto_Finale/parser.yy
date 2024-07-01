@@ -54,6 +54,8 @@
   RPAREN_G   "}"
   EQUAL_if   "=="
   LESS_if    "<"
+  CONDITION  "?"
+  CONDITION_SEPARATOR ":"
   EXTERN     "extern"
   DEF        "def"
   VAR        "var"
