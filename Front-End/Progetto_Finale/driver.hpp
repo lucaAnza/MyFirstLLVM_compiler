@@ -177,7 +177,7 @@ class AssignmentAST : public ExprAST{
         ExprAST* val;
     public:
         AssignmentAST(std::string name , ExprAST *val);
-        AllocaInst* codegen(driver& drv);
+        Value* codegen(driver& drv);
         std::string& getName();
         ExprAST* getValue();
 };

@@ -250,7 +250,7 @@ Summary of each steps:
             ExprAST* val;
         public:
             AssignmentAST(std::string name , ExprAST *val);
-            AllocaInst* codegen(driver& drv);
+            Value* codegen(driver& drv);
             std::string& getName();
             ExprAST* getValue();
     };
@@ -284,6 +284,7 @@ Summary of each steps:
     };
 
     /************************* Assignment **************************/
+
     AssignmentAST::AssignmentAST(std::string name , ExprAST* val) : name(name) , val(val) {};
 
     //Getter
@@ -291,18 +292,22 @@ Summary of each steps:
     ExprAST* AssignmentAST::getValue(){ return val; };
 
     //Methods
-    AllocaInst* AssignmentAST::codegen(driver& drv) {
-    AllocaInst *Alloca = drv.NamedValues[name];
-    if (!Alloca){
-        printf("Variabile non definita!\n");
-        return nullptr;
-    }
-
-    Value* boundval = val->codegen(drv);  //Ottenimento valore associato alla variabile
-    builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
-    return Alloca;
+    Value* AssignmentAST::codegen(driver& drv) {
+        AllocaInst *Alloca = drv.NamedValues[name];
+        Value* boundval = val->codegen(drv);
+        if (!Alloca){
+            GlobalVariable *globalVar = module->getNamedGlobal(name);  //Le variabili globali non sono presenti in drv.NamedValues[]
+            if(!globalVar){
+                std::cout<<"{AssignmentAST} Variabile non definita [name = "<<name<<" ]";
+                return nullptr;
+            }else{
+                builder->CreateStore(boundval,globalVar);  //Inserimento di "boundval" nell'indirizzo di globalVar
+                return boundval;
+            }
+        }
+        builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
+        return boundval;
     };
-        
     ```
 
 4. Add token on <b>scanner.ll</b>
@@ -360,12 +365,44 @@ Summary of each steps:
 
     ```c++
 
+    /******************** Variable Expression Tree ********************/ // *Modified*
+    //Modified- Variable Expression Tree 
+    //Change the following code 
+    Value *VariableExprAST::codegen(driver& drv) {
+    AllocaInst *A = drv.NamedValues[Name];
+        if (!A){
+            GlobalVariable *globalVar = module->getNamedGlobal(Name);  //Le variabili globali non sono presenti in drv.NamedValues[]
+            if(!globalVar)
+                return LogErrorV("{VariableExprAST} Variabile non definita [name = " + Name + " ]");
+            else
+                return builder->CreateLoad(globalVar->getValueType(), globalVar, Name.c_str());
+        }
+        return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
+    }  
+
+    /************************* Assignment **************************/   // *Modified*
+    AllocaInst* AssignmentAST::codegen(driver& drv) {
+        AllocaInst *Alloca = drv.NamedValues[name];
+        Value* boundval = val->codegen(drv);
+        if (!Alloca){
+            GlobalVariable *globalVar = module->getNamedGlobal(name);  //Le variabili globali non sono presenti in drv.NamedValues[]
+            if(!globalVar){
+                std::cout<<"{AssignmentAST} Variabile non definita [name = "<<name<<" ]";
+                return nullptr;
+            }else{
+                builder->CreateStore(boundval,globalVar);  //Inserimento di "boundval" nell'indirizzo di globalVar
+            }
+        }
+        builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
+        return Alloca;
+    };
+
     /*************************Global Variable******************************/
     GlobalVariableAST::GlobalVariableAST(std::string name) : name(name){}
     std::string& GlobalVariableAST::getName(){ return name; };
     Value* GlobalVariableAST::codegen(driver &drv){
     GlobalVariable *globVar;
-    globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullValue(Type::getDoubleTy(*context)), name);    
+    globVar = new GlobalVariable(*module, Type::getDoubleTy(*context), false, GlobalValue::CommonLinkage,  ConstantFP::getNullVal(Type::getDoubleTy(*context)), name);    
     globVar->print(errs());
     fprintf(stderr, "\n");
     return globVar;
@@ -430,7 +467,7 @@ Summary of each steps:
 3. Add class implementation(<b>driver.cpp</b>)
 
     ```c++
-    /******************** Binary Expression Tree **********************/
+    /******************** Binary Expression Tree **********************/  // *Modified*
     //Modified- Binary Expression Tree
     //Added the following code on the main switch. 
     case '<':
@@ -438,7 +475,7 @@ Summary of each steps:
     case '=':
         return builder->CreateFCmpUEQ(L,R,"equalIF");
 
-        
+
 
     /*************************IF Expr******************************/
     IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}

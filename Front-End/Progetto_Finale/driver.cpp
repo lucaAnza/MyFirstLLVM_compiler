@@ -103,11 +103,17 @@ lexval VariableExprAST::getLexVal() const {
 // l'istruzione ma è anche il registro, vista la corrispodenza 1-1 fra le due nozioni), (3)
 // il nome del registro in cui verrà trasferito il valore dalla memoria
 Value *VariableExprAST::codegen(driver& drv) {
-  AllocaInst *A = drv.NamedValues[Name];
-  if (!A)
-     return LogErrorV("Variabile non definita");
-  return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
+    AllocaInst *A = drv.NamedValues[Name];
+    if (!A){
+        GlobalVariable *globalVar = module->getNamedGlobal(Name);  //Le variabili globali non sono presenti in drv.NamedValues[]
+        if(!globalVar)
+            return LogErrorV("{VariableExprAST} Variabile non definita [name = " + Name + " ]");
+        else
+            return builder->CreateLoad(globalVar->getValueType(), globalVar, Name.c_str());
+    }
+    return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
 }
+
 
 /******************** Binary Expression Tree **********************/
 BinaryExprAST::BinaryExprAST(char Op, ExprAST* LHS, ExprAST* RHS):
@@ -118,27 +124,29 @@ BinaryExprAST::BinaryExprAST(char Op, ExprAST* LHS, ExprAST* RHS):
 // operando. Con i valori memorizzati in altrettanti registri SSA si
 // costruisce l'istruzione utilizzando l'opportuno operatore
 Value *BinaryExprAST::codegen(driver& drv) {
-  Value *L = LHS->codegen(drv);
-  Value *R = RHS->codegen(drv);
-  if (!L || !R) 
-     return nullptr;
-  switch (Op) {
-  case '+':
-    return builder->CreateFAdd(L,R,"addres");
-  case '-':
-    return builder->CreateFSub(L,R,"subres");
-  case '*':
-    return builder->CreateFMul(L,R,"mulres");
-  case '/':
-    return builder->CreateFDiv(L,R,"addres");
-  case '<':
-    return builder->CreateFCmpULT(L,R,"lessIF");
-  case '=':
-    return builder->CreateFCmpUEQ(L,R,"equalIF");
-  default:  
-    std::cout << Op << std::endl;
-    return LogErrorV("Operatore binario non supportato");
-  }
+    Value *L = LHS->codegen(drv);
+    Value *R = RHS->codegen(drv);
+    if (!L || !R) {
+        std::cout<<"Errore! L or R register are NULL!\n";
+        return nullptr;
+    }
+    switch (Op) {
+    case '+':
+        return builder->CreateFAdd(L,R,"addres");
+    case '-':
+        return builder->CreateFSub(L,R,"subres");
+    case '*':
+        return builder->CreateFMul(L,R,"mulres");
+    case '/':
+        return builder->CreateFDiv(L,R,"addres");
+    case '<':
+        return builder->CreateFCmpULT(L,R,"lessIF");
+    case '=':
+        return builder->CreateFCmpUEQ(L,R,"equalIF");
+    default:  
+        std::cout << Op << std::endl;
+        return LogErrorV("Operatore binario non supportato");
+    }
 };
 
 /********************* Call Expression Tree ***********************/
@@ -328,9 +336,12 @@ AllocaInst* BindingAST::codegen(driver& drv) {
   }
   AllocaInst* Alloca = CreateEntryBlockAlloca(fun,name);
   builder->CreateStore(boundval,Alloca);
+  drv.NamedValues[name] = Alloca;  //Inserimento valore nella mappa delle variabili.
   return Alloca;
 };
 
+
+/************************* Assignment **************************/
 
 AssignmentAST::AssignmentAST(std::string name , ExprAST* val) : name(name) , val(val) {};
 
@@ -339,16 +350,21 @@ std::string& AssignmentAST::getName(){ return name; };
 ExprAST* AssignmentAST::getValue(){ return val; };
 
 //Methods
-AllocaInst* AssignmentAST::codegen(driver& drv) {
-  AllocaInst *Alloca = drv.NamedValues[name];
-  if (!Alloca){
-     printf("Variabile non definita!\n");
-     return nullptr;
-  }
-
-  Value* boundval = val->codegen(drv);  //Ottenimento valore associato alla variabile
-  builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
-  return Alloca;
+Value* AssignmentAST::codegen(driver& drv) {
+    AllocaInst *Alloca = drv.NamedValues[name];
+    Value* boundval = val->codegen(drv);
+    if (!Alloca){
+        GlobalVariable *globalVar = module->getNamedGlobal(name);  //Le variabili globali non sono presenti in drv.NamedValues[]
+        if(!globalVar){
+            std::cout<<"{AssignmentAST} Variabile non definita [name = "<<name<<" ]";
+            return nullptr;
+        }else{
+            builder->CreateStore(boundval,globalVar);  //Inserimento di "boundval" nell'indirizzo di globalVar
+            return boundval;
+        }
+    }
+    builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
+    return boundval;
 };
 
 
@@ -364,32 +380,35 @@ BlockAST::BlockAST(std::vector<ExprAST*> stmts):
 //Methods
 Value* BlockAST::codegen(driver& drv){
   
-  // vettore per il salvataggio della symbol table
-  std::vector<AllocaInst*> tmp;
+    // vettore per il salvataggio della symbol table
+    std::vector<AllocaInst*> tmp;
   
-  // Binding allocator
-  for (int i=0; i<bindings.size();i++ ){
+    //Alloca tutti i Binding presenti in un blocco
+    for (int i=0; i<bindings.size();i++ ){
     AllocaInst *boundval = (AllocaInst*) bindings[i]->codegen(drv);
-    if (!boundval) 
-     return nullptr;
-    
+    if (!boundval){
+        std::cout<<"{BlockAST} Errore variable non allocata!\n";
+        return nullptr;
+    }
+
     //salvo il vecchio valore della variabile oscurata(scope differente)
     tmp.push_back(drv.NamedValues[bindings[i]->getName()]);
     drv.NamedValues[bindings[i]->getName()] = boundval;
-  }
-  Value* blockValue;
-  // Statements allocator
-  for(int i=0; i<stmts.size(); i++){
-    blockValue = stmts[i]->codegen(drv);
-    if(!blockValue) return nullptr;
-  }
-  
-  //rimetto i valori dello scope precedente
-  for (int i=0; i<bindings.size();i++ )
-    drv.NamedValues[bindings[i]->getName()] = tmp[i]; 
-  
-  // Ritorna l'ultimo valore
-  return blockValue;   
+    }
+    Value* blockValue;
+
+    //Alloca tutti gli statement presenti in un blocco
+    for(int i=0; i<stmts.size(); i++){
+        blockValue = stmts[i]->codegen(drv);
+        if(!blockValue) return nullptr;
+    }
+    
+    //rimetto i valori dello scope precedente
+    for (int i=0; i<bindings.size();i++ )
+        drv.NamedValues[bindings[i]->getName()] = tmp[i]; 
+    
+    // Ritorna l'ultimo valore
+    return blockValue;   
 };
 
 
