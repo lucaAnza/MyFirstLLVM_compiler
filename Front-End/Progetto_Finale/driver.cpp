@@ -425,8 +425,8 @@ Value* GlobalVariableAST::codegen(driver &drv){
 
 
 /*************************IF Expr******************************/
-IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
-Value* IFstmsAST::codegen(driver &drv){
+IFExprAST::IFExprAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
+Value* IFExprAST::codegen(driver &drv){
     
     Value *cond = condition->codegen(drv);
     if(!cond)

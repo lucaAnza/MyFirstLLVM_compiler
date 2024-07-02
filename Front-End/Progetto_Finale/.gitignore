@@ -1,0 +1,5 @@
+*.o
+parser.cpp
+parser.hpp
+scanner.cpp
+kcomp

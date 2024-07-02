@@ -203,15 +203,15 @@ class GlobalVariableAST: public RootAST{
     std::string& getName();
 };
 
-/// IFstmsAST
-class IFstmsAST: public ExprAST{
+/// IFExprAST
+class IFExprAST: public ExprAST{
   private:
     ExprAST* trueExpr;
     ExprAST* falseExpr;
     ExprAST* condition;
 
   public:
-    IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition);
+    IFExprAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition);
     Value* codegen(driver& drv) override;
 };
 

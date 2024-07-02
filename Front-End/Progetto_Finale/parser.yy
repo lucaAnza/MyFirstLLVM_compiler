@@ -23,7 +23,7 @@
   class BlockAST;
   class AssignmentAST;
   class GlobalVariableAST;
-  class IFstmsAST;
+  class IFExprAST;
 }
 
 // The parsing context.
@@ -82,7 +82,7 @@
 %type <std::vector<BindingAST*>> vardefs;
 %type <BindingAST*> binding;
 %type <GlobalVariableAST*> globalvar;
-%type <IFstmsAST*> expif;
+%type <IFExprAST*> expif;
 %type <ExprAST*> condexp;
 
 %%
@@ -121,11 +121,11 @@ idseq:
   %empty                { std::vector<std::string> args; $$ = args; }
 | "id" idseq            { $2.insert($2.begin(),$1); $$ = $2; };
 
-%left "<" "=";
+%left ":" "?";
+%left "<" "==";
 %left "+" "-";
 %left "*" "/";
 
-////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
 stmts:
   stmt                 { std::vector<ExprAST*> statemets; statemets.insert(statemets.begin(),$1); $$ = statemets;}
 | stmt ";" stmts       { $3.insert($3.begin(),$1); $$ = $3; };
@@ -149,9 +149,6 @@ vardefs:
 binding:
   "var" "id" initexp   { $$ = new BindingAST($2,$3); };
 
-////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
-
-
 exp:
   exp "+" exp           { $$ = new BinaryExprAST('+',$1,$3); }
 | exp "-" exp           { $$ = new BinaryExprAST('-',$1,$3); }
@@ -163,16 +160,12 @@ exp:
 | expif                 { $$ = $1; };
 
 
-////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
-
 expif:
-  condexp "?" exp ":" exp   { $$ = new IFstmsAST($3,$5,$1);};
+  condexp "?" exp ":" exp   { $$ = new IFExprAST($3,$5,$1);};
 
 condexp:
   exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
 | exp "==" exp              { $$ = new BinaryExprAST('=',$1,$3); }
-
-////////////////////////////////////// GRAMMAR 1.0 //////////////////////////////////////////////////////////
 
 
 idexp:
