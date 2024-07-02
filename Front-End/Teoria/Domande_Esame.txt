@@ -1,0 +1,5 @@
+Domande orale:
+
+1. Cosa sono gli insiemi First e Follow? Come si calcolano?
+2. Cos'è un parser?
+3. Mi spieghi la costruzione della tabella e lo stack.

@@ -1,0 +1,23 @@
+GUIDA ALL'ESECUZIONE
+
+
+MODALITA' 1:
+
+1. g++ postorder.cpp 
+2. ./a.out tree1.txt > input.txt    ( Di default l'output è fatto su IOSTREAM )
+3. g++ substet_construction.cpp 
+4. ./a.out input.txt
+
+MODALITA' 2: 
+
+1. g++ -o post.exe postorder.cpp
+2. g++ -o subset.exe subset_construction.cpp
+3. ./post.exe tree1.txt | ./subset.exe
+
+
+EXTRA:
+
+1. Ricordati che entrambi i sorgenti hanno la possibilità di stampare in un formato più leggibile. 
+   Nel caso di substet_construction.cpp basta impostare la chiamata subsetConstructionSolver(k,true) con true impostato. [ Funzione : main()]
+   Nel caso di postorder.cpp basta scommentare //printAutoma_debug(nStati);  [ Funzione : main()]
+
