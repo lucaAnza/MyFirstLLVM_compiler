@@ -7,6 +7,14 @@
 1. `make`
 2. `./kcomp <filename>` -> Stampa in stderr il codice IR generato.
     - Example : `./kcomp input.txt 2> output.ll`
+  
+## How to test the compiler
+
+⚠ Remember to create ./kcomp exe file.
+1. `cd tester_progetto/`
+2. `make <nome pgm>`
+   - Example : `make floor`
+3. `./floor`
 
 ## How to try if the generated IR code does what you expected
 
