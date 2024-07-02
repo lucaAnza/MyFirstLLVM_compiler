@@ -111,6 +111,28 @@ Output - Text
 
 ### Explanation
 
+Per implementare l'algoritmo si è deciso di utilizzare la seguente struttura dati:
+
+Code:
+
+```c++
+char* simboloInput;   // IC
+int* state1,*state2;   // STATE1,STATE2
+```
+
+Graphic:
+
+<img src="img/data_structure_part1.png" alt="input">
+
+<br>
+
+- IC : rappresenta il carattere in input.
+- State1 : rappresenta lo stato di arrivo.
+- State2 : rappresenta lo stato di arrivo. (Utilizzato solo nel caso di ε).
+
+
+<br><br>
+
 ## Part2 (automaton construction)
 
 Source file name : `postorder.cpp` <br>
