@@ -42,6 +42,102 @@ K → Numero stati ( va dedotto dal numero di righe ) <br>
 
 ### Input-example1
 
+Input - Graphic  
+
+<img src="img/risultato_finale.png" alt="input"><br>
+
+Input - Text (output of `postorder.cpp` executed with `tree1.txt`)
+ 
+```c++
+a b c   //Simboli dell’alfabeto (ε,a,b,c) 
+14      //Stati finali
+        // Δ (0,"ε")      
+        // Δ (0,"a")
+1       // Δ (0,"b")
+        // Δ (0,"c")
+12      // Δ (1,"ε")
+        // Δ (1,"a")
+        // ...
+        // ...
+        // ...
+3       
+<2 righe vuote>
+4
+<5 righe vuote>
+5
+<riga vuota>
+13
+<4 righe vuote>
+7
+<2 righe vuote>
+9 6
+<3 righe vuote>
+6 9
+<3 righe vuote>
+10
+<6 righe vuote>
+11
+13
+<3 righe vuote>
+2 8
+<7 righe vuote>
+```
+<br><br>
+<br>
+
+### Output-example1
+
+Output - Graphic
+
+<table style="width : 60%;">
+     <tr>
+        <td><h4>Letter</h4></td>
+        <td><h4>Number</h4></td>
+    </tr>
+    <tr>
+        <td><img src="img/letter_deterministic_solution.png" alt="input" width=100%><br></td>
+        <td><img src="img/number_deterministic_solution.png.png" alt="input" width=100%><br></td>
+    </tr>
+</table>
+
+<br>
+
+Output - Text
+
+```c++
+// State set
+0                      // A = {0}
+1 2 6 8 9 10 12        // B = {1,2,6,8,9,10,12}
+3 4 6 7 9 10           // C = {3,4,6,7,9,10}
+11 13                  // D = {11,13}
+6 7 9 10               // E = {6,7,9,10}
+5 13                   // F = {5,13}
+0 1 2 3 4 5            // Stati finali = {0,1,2,3,4,5} -> {A,B,C,D,E,F} 
+// Transiction functions 
+        //ẟ(0,a) 
+1       //ẟ(0,b) = 1 
+        //ẟ(0,c) 
+2       //ẟ(1,a) = 2
+        //ẟ(1,b) 
+3       //ẟ(1,c) = 3
+4       //ẟ(2,a) = 4
+5       //ẟ(2,b) = 5
+3       //ẟ(2,c) = 3
+        //ẟ(3,a) 
+        //ẟ(3,b) 
+        //ẟ(3,c) 
+4       //ẟ(4,a) = 4
+        //ẟ(4,b) 
+3       //ẟ(4,c) = 3
+        //ẟ(5,a) 
+        //ẟ(5,b) 
+        //ẟ(5,c) 
+```
+
+<br><br>
+
+### Input-example2
+
 Input - Graphic  (<span style="color:yellow">⚠️  this input isn't compatible with programm data structures</span>)
 
 <img src="img/non_deterministic_auto.png" alt="input"><br>
@@ -73,7 +169,7 @@ a b                             //Simboli dell’alfabeto (ε,a,b)
 ```
 <br>
 
-### Output-example1
+### Output-example2
 
 Output - Graphic
 
@@ -94,19 +190,18 @@ Output - Text
 5 6 7                 // D = {5,6,7}
 8                     // E = {8}
 5 6 7 8               // F = {5,6,7,8}
-0 1 2 4 5             // G = {0,1,2,4,5}
-
+0 1 2 3 4 5           // Stati finali = {0,1,2,3,4,5} -> {A,B,C,D,E,F} 
 // Transiction functions
-1 # ẟ(0,a) = 1
+1                     //ẟ(0,a) = 1(B)
 <riga vuota>          // (0,”b”)
-2 # ẟ(1,a) = 2
-3 # ẟ(1,b) = 3
-2 # ẟ(2,a) = 2
-<riga vuota>           //  (0,”b”)
-4 # ẟ(3,a) = 4
-5 # ẟ(3,b) = 5
-4 # ẟ(4,a) = 4
-5 # ẟ(4,b) = 5
+2                     // ẟ(1,a) = 2(C)
+3                     // ẟ(1,b) = 3(D)
+2                     // ẟ(2,a) = 2(C)
+<riga vuota>          // (2,”b”)
+4                     // ẟ(3,a) = 4(E)
+5                     // ẟ(3,b) = 5(F)
+4                     // ẟ(4,a) = 4(E)
+5                     // ẟ(4,b) = 5(F)
 ```
 
 <br><br>

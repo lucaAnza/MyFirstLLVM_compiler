@@ -290,7 +290,8 @@ void subsetConstructionSolver (const int k , bool debug) {
             Q = mappa[starting_it_char];   
     }
 
-    
+    simboli.erase(EPSILON);  //Rimozione Epsilon poichè è diventato un automa deterministico
+
     if(debug){
         //Stampa automa
         printAutoma_debug(k);
@@ -330,13 +331,15 @@ void subsetConstructionSolver (const int k , bool debug) {
         std::map< pair<char, char> , char >::iterator it_map = transizioni.begin();
         //L'idea di questo algoritmo è di generare le coppie (A,a),(A,b)...(A,z) fintantochè non si trova un match con la mappa finale. 
         //In tal caso stampare la transizione e andare all'elemento successivo della mappa.
-        for(int i=0 ; i<(S*statiFinali) ; i++){
+        // it_char -> A,B,C,D,E,...,Z
+        // it -> a,b,c (Nel caso di un alfabeto in input 𝛴 = a,b,c)
+        for(int i=0 ; i<(S*statiFinali) ; i++){    
             it_char = 'A';
             if(i%S == 0){
                 it = simboli.begin();
             }
             indice = i/S;
-            it_char = it_char + indice;
+            it_char = it_char + indice;  // Ogni |S| iterazioni indice aumenterà di 1.
             tempPair.first = it_char;
             tempPair.second = *it;
             //cout<<"confronto tra ("<<tempPair.first<<","<<tempPair.second<<") e ("<<it_map->first.first<<","<<it_map->first.second<<")"<<endl;
