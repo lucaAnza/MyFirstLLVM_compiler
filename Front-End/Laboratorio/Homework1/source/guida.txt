@@ -1,5 +1,8 @@
 GUIDA ALL'ESECUZIONE
 
+-> Ricordati che la rappresentazione grafica dell'input "tree1.txt" 
+è visionabile nel file README del progetto.
+
 
 MODALITA' 1:
 

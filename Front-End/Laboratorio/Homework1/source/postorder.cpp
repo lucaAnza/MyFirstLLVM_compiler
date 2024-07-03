@@ -49,7 +49,7 @@ public:
      end = right->end;
      state1[left->end] = right->start;
      simboloInput[left->end] = EPSILON;
-  }else{      // caso cui symb == '|'
+  }else{      // caso cui symb == '|' (unione)
      start=cont;
      simboloInput[cont] = EPSILON;
      state1[cont] = left->start;
