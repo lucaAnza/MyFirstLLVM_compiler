@@ -1,17 +1,29 @@
 # Front-End
 
-Date le seguenti fasi della compilazione:
+Given the following compilation stages:
 
-<img src="Teoria/img/toolchain.png" alt="fasi" width=20%></img>
+<img src="Teoria/img/toolchain.png" alt="fasi" width=30%></img>
 
-In questa parte del progetto andremmo analizzare e produrre un esempio funzionante delle
-prime 4 fasi (Front-End).
-Le fasi sono le seguenti:
+In this part of the project, we will analyze and produce a working example of the first 4 phases (Front-End).
+The phases are as follows:
 
-1. Analizzatore sintattico.
-2. Analizzatore lessicale.
-3. Analizzatore semantico.
-4. Generatore di codice intermedio.
+1. Lexical analyzer.
+2. Syntax analyzer.
+3. Semantic analyzer.
+4. Intermediate code generator.
+
+<br>
+
+<b>Front-End structure</b>
+
+<img src="Progetto_Finale/img/struttura_front-end.png" alt="explain img" width=50%>
+
+- <b>Lexer</b> is implemented using [Flex](https://github.com/westes/flex) (open source tool)
+- <b>Parser</b> is implemented using [Bison](https://www.gnu.org/software/bison/) (open source tool)
+- <b>Code generator</b> is implemented in a file .cpp called `driver.cpp`.
+
+
+<br><br>
 
 ## Dependencies
 
@@ -32,6 +44,13 @@ Le fasi sono le seguenti:
     sudo apt-get install g++-multilib
     sudo apt-get install libc++-16-dev libc++abi-16-dev
     ```
+
+## Directory guide 📁
+
+- You can find _source code_ on `/Progetto_Finale`.
+- You can find _theoretical concepts_ on `/Teoria`.
+- You can find _some exercises_ and _subset construcion algorithm_ on `Laboratorio`.
+
 ## Link utili
 
 Drive: https://drive.google.com/drive/u/1/folders/16mBaaH7VP5WH-fU2RXQDZG5Z-GDHRd7d

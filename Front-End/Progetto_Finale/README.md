@@ -1,5 +1,46 @@
 # My first Front-End compiler.
 
+## Introduction
+
+### Front-end struct
+
+<img src="img/struttura_front-end.png" alt="explain img" width=50%>
+
+- <b>Lexer</b> is implemented using [Flex](https://github.com/westes/flex) (open source tool)
+- <b>Parser</b> is implemented using [Bison](https://www.gnu.org/software/bison/) (open source tool)
+- <b>Code generator</b> is implemented in a file .cpp called `driver.cpp`.
+
+### Abstract Syntax Tree scheme
+
+<img src="img/tree_scheme.png" alt="liv1_1" width=50%></img>
+
+---
+
+<b>NamedValues (driver.cpp)</b>:
+
+It is a map of Driver class.
+```text
+
+Map = { <str,AllocaInst*> , <str,AllocaInst*> , ... }
+
+// Each <str> rappresent the name of a variable.
+
+```
+usage:
+
+```c++
+AllocaInst *A = drv.NamedValues[Name];
+if (!A)
+    return LogErrorV("Variabile non definita");
+return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
+```
+
+### IR C++ Api
+
+<span style="color:yellow"> Take drawio IR_API and made a screen (TODO) </span>
+
+<br><br>
+
 ⚠ Remember to install dependencies package!
 
 ## How to start the compiler
@@ -27,36 +68,8 @@
 2. `clang -o file_exe input.s`
 
 
-## Theoretical Prerequisites
-
-<b>Abstract Syntax Tree scheme</b>:
-
-<img src="img/tree_scheme.png" alt="liv1_1" width=50%></img>
-
----
-
-<b>NamedValues (driver.cpp)</b>:
-
-It is a map of Driver class.
-```text
-
-Map = { <str,AllocaInst*> , <str,AllocaInst*> , ... }
-
-// Each <str> rappresent the name of a variable.
-
-```
-usage:
-
-```c++
-AllocaInst *A = drv.NamedValues[Name];
-if (!A)
-    return LogErrorV("Variabile non definita");
-return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
-```
 
 
-
-<br><br>
 ## Steps
 
 ### Grammar Level 1.0
