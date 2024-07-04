@@ -558,43 +558,44 @@ Feature:
     }
 
     ///////////////////////////////////TYPE//////////////////////////////////////////
-
-    %type <IFstmsAST*> expif;
-    %type <ExprAST*> condexp;
+    %type <IFstmtAST*> ifstmt;
+    
 
     ///////////////////////////////////RULES//////////////////////////////////////////
+    
+    //Modified
+    stmt:
+        assignment                 { $$ = $1;}  // <---- old
+        | block                    { $$ = $1;}  // <---- old
+        | ifstmt                   { $$ = $1;}  // <---- NEW
+        | exp                      { $$ = $1;}; // <---- old
+    
+    //New
+    ifstmt:
+        "if" "(" condexp ")" stmt                 { $$ = new IFstmtAST($5,$3); } %prec "then"
+    |   "if" "(" condexp ")" stmt "else" stmt     { $$ = new IFstmtAST($5,$7,$3); };
 
-    exp:                                                           //old
-    exp "+" exp           { $$ = new BinaryExprAST('+',$1,$3); }   //old
-    | exp "-" exp           { $$ = new BinaryExprAST('-',$1,$3); } //old
-    | exp "*" exp           { $$ = new BinaryExprAST('*',$1,$3); } //old
-    | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); } //old
-    | idexp                 { $$ = $1; }                           //old
-    | "(" exp ")"           { $$ = $2; }                           //old
-    | "number"              { $$ = new NumberExprAST($1); }        //old
-    | expif                 { $$ = $1; };                          //<------ added(new)
+    
+    ///////////////////////////////////SCANNER////////////////////////////////////////
+    IF         "if"
+    ELSE       "else"
 
-    /// All-new
-    expif:
-    condexp "?" exp ":" exp   { $$ = new IFstmsAST($3,$5,$1);};
-
-    condexp:
-    exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
-    | exp "==" exp              { $$ = new BinaryExprAST('=',$1,$3); }
+    
 
     ```
 2. Add class header(<b>driver.hpp</b>)
 
     ```c++
-    /// IFstmsAST
-    class IFstmsAST: public ExprAST{
+    /// IFstmtAST
+    class IFstmtAST: public ExprAST{
     private:
-        ExprAST* trueExpr;
-        ExprAST* falseExpr;
+        ExprAST* trueAssignment;
+        ExprAST* falseAssignment;
         ExprAST* condition;
 
     public:
-        IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition);
+        IFstmtAST(ExprAST* trueAssignment , ExprAST* falseAssignment , ExprAST* condition);
+        IFstmtAST(ExprAST* trueAssignment , ExprAST* condition);
         Value* codegen(driver& drv) override;
     };
     ```
@@ -602,62 +603,75 @@ Feature:
 3. Add class implementation(<b>driver.cpp</b>)
 
     ```c++
-    /******************** Binary Expression Tree **********************/  // *Modified*
-    //Modified- Binary Expression Tree
-    //Added the following code on the main switch. 
-    case '<':
-        return builder->CreateFCmpULT(L,R,"lessIF");
-    case '=':
-        return builder->CreateFCmpUEQ(L,R,"equalIF");
+    /*************************IF stmt AST******************************/
+    IFstmtAST::IFstmtAST(ExprAST* trueAssignment , ExprAST* falseAssignment , ExprAST* condition) : trueAssignment(trueAssignment) , falseAssignment(falseAssignment) , condition(condition) {}
+    IFstmtAST::IFstmtAST(ExprAST* trueAssignment , ExprAST* condition) : trueAssignment(trueAssignment) , falseAssignment(nullptr) , condition(condition) {}
 
-
-
-    /*************************IF Expr******************************/
-    IFstmsAST::IFstmsAST(ExprAST* trueExpr , ExprAST* falseExpr , ExprAST* condition) : trueExpr(trueExpr) , falseExpr(falseExpr) , condition(condition) {}
-    Value* IFstmsAST::codegen(driver &drv){
+    Value* IFstmtAST::codegen(driver &drv){
         
         Value *cond = condition->codegen(drv);
-        if(!cond)
+        if(!cond){
+            std::cout<<"ERRORE -> Condizione inesistente!\n";
             return nullptr;
+        }
 
-        Function *fun = builder->GetInsertBlock()->getParent();
-        BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
-        BasicBlock *FalseBB = BasicBlock::Create(*context, "false_BB", fun);
-        BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
-        builder->CreateCondBr(cond, TrueBB, FalseBB);
+        if(falseAssignment != nullptr){   // Caso in cui c'è il caso "else"
+            Function *fun = builder->GetInsertBlock()->getParent();
+            BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+            BasicBlock *FalseBB = BasicBlock::Create(*context, "false_BB", fun);
+            BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+            builder->CreateCondBr(cond, TrueBB, FalseBB);
 
-        //Set TrueBB writing BasicBlock
-        builder->SetInsertPoint(TrueBB);
-        Value* trueValue = trueExpr->codegen(drv);
-        if(!trueValue) return nullptr;
-        builder->CreateBr(MergeBB);
-        //fun->insert(fun->end(), FalseBB);
+            //Set TrueBB writing BasicBlock
+            builder->SetInsertPoint(TrueBB);
+            Value* trueValue = trueAssignment->codegen(drv);
+            if(!trueValue) return nullptr;
+            builder->CreateBr(MergeBB);
+            //fun->insert(fun->end(), FalseBB);
 
-        //Set FalseBB writing BasicBlock
-        builder->SetInsertPoint(FalseBB);
-        Value* falseValue = falseExpr->codegen(drv);
-        if(!falseValue) return nullptr;
-        builder->CreateBr(MergeBB);
+            //Set FalseBB writing BasicBlock
+            builder->SetInsertPoint(FalseBB);
+            Value* falseValue = falseAssignment->codegen(drv);
+            if(!falseValue) return nullptr;
+            builder->CreateBr(MergeBB);
 
-        //Set MergeBB writing BasicBlock
-        builder->SetInsertPoint(MergeBB);
-        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
-        P-> addIncoming(trueValue, TrueBB);
-        P-> addIncoming(falseValue, FalseBB);
-        return P;
+            //Set MergeBB writing BasicBlock
+            builder->SetInsertPoint(MergeBB);
+            PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+            P-> addIncoming(trueValue, TrueBB);
+            P-> addIncoming(falseValue, FalseBB);
+            return P;
+        }else{                          // Caso in cui non c'è il caso "else"
+            Function *fun = builder->GetInsertBlock()->getParent();
+            BasicBlock *PreIFBB = builder->GetInsertBlock();
+            BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+            BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+            builder->CreateCondBr(cond, TrueBB, MergeBB);
 
+            //Set TrueBB writing BasicBlock
+            builder->SetInsertPoint(TrueBB);
+            Value* trueValue = trueAssignment->codegen(drv);
+            if(!trueValue) return nullptr;
+            builder->CreateBr(MergeBB);
+
+            //Set MergeBB writing BasicBlock
+            builder->SetInsertPoint(MergeBB);
+            PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+            P-> addIncoming(trueValue, TrueBB);
+            return P;
+        }
+        
     };
     ```
 
 4. Add token on <b>scanner.ll</b>
 
     ```c++
-    "<"      return yy::parser::make_LESS_if                 (loc);
-    "=="     return yy::parser::make_EQUAL_if                (loc);
-    "?"      return yy::parser::make_CONDITION               (loc);
-    ":"      return yy::parser::make_CONDITION_SEPARATOR     (loc);
+    "if"     return yy::parser::make_IF(loc);
+    "else"   return yy::parser::make_ELSE(loc);
     ```
 
+#### ForStatement (step2_2)
 
 
 

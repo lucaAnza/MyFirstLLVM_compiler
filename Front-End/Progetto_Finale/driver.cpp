@@ -461,6 +461,67 @@ Value* IFExprAST::codegen(driver &drv){
 };
 
 
+/*************************IF stmt AST******************************/
+IFstmtAST::IFstmtAST(ExprAST* trueAssignment , ExprAST* falseAssignment , ExprAST* condition) : trueAssignment(trueAssignment) , falseAssignment(falseAssignment) , condition(condition) {}
+IFstmtAST::IFstmtAST(ExprAST* trueAssignment , ExprAST* condition) : trueAssignment(trueAssignment) , falseAssignment(nullptr) , condition(condition) {}
+
+Value* IFstmtAST::codegen(driver &drv){
+    
+    Value *cond = condition->codegen(drv);
+    if(!cond){
+        std::cout<<"ERRORE -> Condizione inesistente!\n";
+        return nullptr;
+    }
+
+    if(falseAssignment != nullptr){   // Caso in cui c'è il caso "else"
+        Function *fun = builder->GetInsertBlock()->getParent();
+        BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+        BasicBlock *FalseBB = BasicBlock::Create(*context, "false_BB", fun);
+        BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+        builder->CreateCondBr(cond, TrueBB, FalseBB);
+
+        //Set TrueBB writing BasicBlock
+        builder->SetInsertPoint(TrueBB);
+        Value* trueValue = trueAssignment->codegen(drv);
+        if(!trueValue) return nullptr;
+        builder->CreateBr(MergeBB);
+        //fun->insert(fun->end(), FalseBB);
+
+        //Set FalseBB writing BasicBlock
+        builder->SetInsertPoint(FalseBB);
+        Value* falseValue = falseAssignment->codegen(drv);
+        if(!falseValue) return nullptr;
+        builder->CreateBr(MergeBB);
+
+        //Set MergeBB writing BasicBlock
+        builder->SetInsertPoint(MergeBB);
+        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+        P-> addIncoming(trueValue, TrueBB);
+        P-> addIncoming(falseValue, FalseBB);
+        return P;
+    }else{                          // Caso in cui non c'è il caso "else"
+        Function *fun = builder->GetInsertBlock()->getParent();
+        BasicBlock *PreIFBB = builder->GetInsertBlock();
+        BasicBlock *TrueBB = BasicBlock::Create(*context, "true_BB", fun);
+        BasicBlock *MergeBB = BasicBlock::Create(*context, "mergeBB" , fun);
+        builder->CreateCondBr(cond, TrueBB, MergeBB);
+
+        //Set TrueBB writing BasicBlock
+        builder->SetInsertPoint(TrueBB);
+        Value* trueValue = trueAssignment->codegen(drv);
+        if(!trueValue) return nullptr;
+        builder->CreateBr(MergeBB);
+
+        //Set MergeBB writing BasicBlock
+        builder->SetInsertPoint(MergeBB);
+        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+        P-> addIncoming(trueValue, TrueBB);
+        return P;
+    }
+    
+};
+
+
 
 
 

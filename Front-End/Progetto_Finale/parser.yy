@@ -24,6 +24,7 @@
   class AssignmentAST;
   class GlobalVariableAST;
   class IFExprAST;
+  class IFstmtAST;
 }
 
 // The parsing context.
@@ -60,6 +61,8 @@
   DEF        "def"
   VAR        "var"
   GLOBAL     "global"
+  IF         "if"
+  ELSE       "else"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -84,6 +87,7 @@
 %type <GlobalVariableAST*> globalvar;
 %type <IFExprAST*> expif;
 %type <ExprAST*> condexp;
+%type <IFstmtAST*> ifstmt;
 
 %%
 %start startsymb;
@@ -133,14 +137,22 @@ stmts:
 stmt:
 assignment                 { $$ = $1;}
 | block                    { $$ = $1;}
+| ifstmt                   { $$ = $1;}
 | exp                      { $$ = $1;};
+
 
 assignment:
   "id" "=" exp           { $$ = new AssignmentAST($1,$3);};
 
 block:
-  "{" stmts "}"                  { $$ = new BlockAST($2); };
+  "{" stmts "}"                  { $$ = new BlockAST($2); }
 | "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2,$4); };
+
+%right "then" "else" ;
+
+ifstmt:
+  "if" "(" condexp ")" stmt                 { $$ = new IFstmtAST($5,$3); } %prec "then"
+| "if" "(" condexp ")" stmt "else" stmt     { $$ = new IFstmtAST($5,$7,$3); };
 
 vardefs:
   binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}

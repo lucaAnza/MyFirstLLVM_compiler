@@ -48,6 +48,8 @@ blank   [ \t]
 "=="     return yy::parser::make_EQUAL_if  (loc);
 "?"      return yy::parser::make_CONDITION (loc);
 ":"      return yy::parser::make_CONDITION_SEPARATOR     (loc);
+"if"     return yy::parser::make_IF(loc);
+"else"   return yy::parser::make_ELSE(loc);
 
 {num}    { errno = 0;
            double n = strtod(yytext, NULL);

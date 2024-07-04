@@ -215,6 +215,19 @@ class IFExprAST: public ExprAST{
     Value* codegen(driver& drv) override;
 };
 
+/// IFstmtAST
+class IFstmtAST: public ExprAST{
+  private:
+    ExprAST* trueAssignment;
+    ExprAST* falseAssignment;
+    ExprAST* condition;
+
+  public:
+    IFstmtAST(ExprAST* trueAssignment , ExprAST* falseAssignment , ExprAST* condition);
+    IFstmtAST(ExprAST* trueAssignment , ExprAST* condition);
+    Value* codegen(driver& drv) override;
+};
+
 
 
 #endif // ! DRIVER_HH
