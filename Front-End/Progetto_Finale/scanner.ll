@@ -50,7 +50,8 @@ blank   [ \t]
 ":"      return yy::parser::make_CONDITION_SEPARATOR     (loc);
 "if"     return yy::parser::make_IF(loc);
 "else"   return yy::parser::make_ELSE(loc);
-
+"for"    return yy::parser::make_FOR(loc);
+ 
 {num}    { errno = 0;
            double n = strtod(yytext, NULL);
            if (! (n!=HUGE_VAL && n!=-HUGE_VAL && errno != ERANGE))

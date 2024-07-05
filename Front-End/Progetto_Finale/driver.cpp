@@ -521,6 +521,42 @@ Value* IFstmtAST::codegen(driver &drv){
     
 };
 
+/*************************FOR stmt AST******************************/
+FORstmtAST::FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body) : init(init) , condExp(condExp) , assignment(assignment) , stmt(stmt) {}
+
+Value* FORstmtAST::codegen(driver &drv){
+    
+    std::cout<<"Work in progress!!! FORstmtAST (driver.cpp)...\n";
+    return nullptr;
+
+    /*
+    // TO DO
+    Value *cond = condExp->codegen(drv);
+    if(!cond){
+        std::cout<<"ERRORE -> Condizione inesistente!\n";
+        return nullptr;
+    }
+
+    Function *fun = builder->GetInsertBlock()->getParent();
+    
+    BasicBlock *BodyBB = body->codegen()->getParent();
+    builder->CreateCondBr(cond, BodyBB, afterBB);
+
+    //Set MergeBB writing BasicBlock
+    builder->SetInsertPoint(MergeBB);
+    PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
+    P-> addIncoming(trueValue, TrueBB);
+    P-> addIncoming(falseValue, FalseBB);
+    return P;
+    */
+
+    
+   
+    
+};
+
+
+
 
 
 

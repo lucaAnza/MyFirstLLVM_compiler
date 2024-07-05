@@ -63,6 +63,7 @@
   GLOBAL     "global"
   IF         "if"
   ELSE       "else"
+  FOR        "for"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -88,6 +89,7 @@
 %type <IFExprAST*> expif;
 %type <ExprAST*> condexp;
 %type <IFstmtAST*> ifstmt;
+%type <RootAST*> init;
 
 %%
 %start startsymb;
@@ -153,6 +155,13 @@ block:
 ifstmt:
   "if" "(" condexp ")" stmt                 { $$ = new IFstmtAST($5,$3); } %prec "then"
 | "if" "(" condexp ")" stmt "else" stmt     { $$ = new IFstmtAST($5,$7,$3); };
+
+forstmt:  
+  "for" "(" init ";" condexp ";" assignment ")" stmt
+
+init:
+  binding             { $$ = $1 };
+|  assignment         { $$ = $1 };
 
 vardefs:
   binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}

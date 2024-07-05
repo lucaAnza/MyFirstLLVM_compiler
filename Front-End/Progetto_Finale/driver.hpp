@@ -228,6 +228,20 @@ class IFstmtAST: public ExprAST{
     Value* codegen(driver& drv) override;
 };
 
+/// FORstmtAST
+
+class FORstmtAST: public ExprAST{
+  private:
+    RootAST* init;
+    ExprAST* condExp;
+    AssignmentAST* increment;
+    ExprAST* body;
+
+  public:
+    FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* stmt);
+    Value* codegen(driver& drv) override;
+};
+
 
 
 #endif // ! DRIVER_HH
