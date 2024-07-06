@@ -81,7 +81,7 @@ lexval NumberExprAST::getLexVal() const {
 // La costante verrà utilizzata in altra parte del processo di generazione
 // Si noti che l'uso del contesto garantisce l'unicità della costanti 
 Value *NumberExprAST::codegen(driver& drv) {  
-  return ConstantFP::get(*context, APFloat(Val));
+    return ConstantFP::get(*context, APFloat(Val));
 };
 
 /******************** Variable Expression Tree ********************/
@@ -127,7 +127,6 @@ Value *BinaryExprAST::codegen(driver& drv) {
     Value *L = LHS->codegen(drv);
     Value *R = RHS->codegen(drv);
     if (!L || !R) {
-        std::cout<<"Errore! L or R register are NULL!\n";
         return nullptr;
     }
     switch (Op) {
@@ -144,7 +143,6 @@ Value *BinaryExprAST::codegen(driver& drv) {
     case '=':
         return builder->CreateFCmpUEQ(L,R,"equalIF");
     default:  
-        std::cout << Op << std::endl;
         return LogErrorV("Operatore binario non supportato");
     }
 };
@@ -336,7 +334,6 @@ AllocaInst* BindingAST::codegen(driver& drv) {
   }
   AllocaInst* Alloca = CreateEntryBlockAlloca(fun,name);
   builder->CreateStore(boundval,Alloca);
-  drv.NamedValues[name] = Alloca;  //Inserimento valore nella mappa delle variabili.
   return Alloca;
 };
 
@@ -389,15 +386,15 @@ Value* BlockAST::codegen(driver& drv){
   
     //Alloca tutti i Binding presenti in un blocco
     for (int i=0; i<bindings.size();i++ ){
-    AllocaInst *boundval = (AllocaInst*) bindings[i]->codegen(drv);
-    if (!boundval){
-        std::cout<<"{BlockAST} Errore variable non allocata!\n";
-        return nullptr;
-    }
+        AllocaInst *boundval = (AllocaInst*) bindings[i]->codegen(drv);
+        if (!boundval){
+            std::cout<<"{BlockAST} Errore variable non allocata!\n";
+            return nullptr;
+        }
 
-    //salvo il vecchio valore della variabile oscurata(scope differente)
-    tmp.push_back(drv.NamedValues[bindings[i]->getName()]);
-    drv.NamedValues[bindings[i]->getName()] = boundval;
+        //salvo il vecchio valore della variabile oscurata(scope differente)
+        tmp.push_back(drv.NamedValues[bindings[i]->getName()]);
+        drv.NamedValues[bindings[i]->getName()] = boundval;
     }
     Value* blockValue;
 

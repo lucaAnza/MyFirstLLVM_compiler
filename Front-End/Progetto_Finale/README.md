@@ -241,8 +241,8 @@ Summary of each steps:
     | "{" vardefs ";" stmts "}"      { $$ = new BlockAST($2,$4); };
 
     vardefs:
-    binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}
-    | vardefs ";" binding    { $1.insert($1.begin(),$3); $$ = $1; };
+        binding               { std::vector<BindingAST*> bindings; bindings.push_back($1); $$ = bindings; }
+        | vardefs ";" binding   { $1.push_back($3); $$ = $1; };
 
     binding:
     "var" "id" initexp   { $$ = new BindingAST($2,$3); };
