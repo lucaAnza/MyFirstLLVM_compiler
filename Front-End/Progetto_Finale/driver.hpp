@@ -158,6 +158,14 @@ public:
 // Classi aggiunte per il progetto
 //////////////////////////////////
 
+// variableOperationType (definisce il tipo di operazione che manipola le variabili) 
+enum VariableOperationType {
+  ASSIGNMENT,
+  BINDING,
+  INIT
+};
+
+
 // Binding - Classe che rappresenta un binding (Ex: var x = 7)
 class BindingAST : public RootAST{
     private:
@@ -168,6 +176,7 @@ class BindingAST : public RootAST{
         AllocaInst* codegen(driver& drv);
         std::string& getName();
         ExprAST* getValue();
+        VariableOperationType getType();
 };
 
 // Assignment - Classe che rappresenta un assignment (Ex: x = 13)
@@ -180,6 +189,7 @@ class AssignmentAST : public ExprAST{
         Value* codegen(driver& drv);
         std::string& getName();
         ExprAST* getValue();
+        VariableOperationType getType();
 };
 
 /// BlockAST
@@ -238,7 +248,7 @@ class FORstmtAST: public ExprAST{
     ExprAST* body;
 
   public:
-    FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* stmt);
+    FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body);
     Value* codegen(driver& drv) override;
 };
 

@@ -25,6 +25,7 @@
   class GlobalVariableAST;
   class IFExprAST;
   class IFstmtAST;
+  class FORstmtAST;
 }
 
 // The parsing context.
@@ -90,6 +91,7 @@
 %type <ExprAST*> condexp;
 %type <IFstmtAST*> ifstmt;
 %type <RootAST*> init;
+%type <FORstmtAST*> forstmt;
 
 %%
 %start startsymb;
@@ -140,6 +142,7 @@ stmt:
 assignment                 { $$ = $1;}
 | block                    { $$ = $1;}
 | ifstmt                   { $$ = $1;}
+| forstmt                  { $$ = $1;}
 | exp                      { $$ = $1;};
 
 
@@ -157,11 +160,11 @@ ifstmt:
 | "if" "(" condexp ")" stmt "else" stmt     { $$ = new IFstmtAST($5,$7,$3); };
 
 forstmt:  
-  "for" "(" init ";" condexp ";" assignment ")" stmt
+  "for" "(" init ";" condexp ";" assignment ")" stmt     { $$ = new FORstmtAST($3,$5,$7,$9); };
 
 init:
-  binding             { $$ = $1 };
-|  assignment         { $$ = $1 };
+  binding             { $$ = $1; }
+|  assignment         { $$ = $1; };
 
 vardefs:
   binding                { std::vector<BindingAST*> bindings; bindings.insert(bindings.begin(),$1); $$ = bindings;}

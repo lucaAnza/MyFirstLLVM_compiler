@@ -340,6 +340,8 @@ AllocaInst* BindingAST::codegen(driver& drv) {
   return Alloca;
 };
 
+VariableOperationType BindingAST::getType() { return BINDING;};
+
 
 /************************* Assignment **************************/
 
@@ -366,6 +368,8 @@ Value* AssignmentAST::codegen(driver& drv) {
     builder->CreateStore(boundval,Alloca);  //Inserimento di "boundval" nell'indirizzo di alloca
     return boundval;
 };
+
+VariableOperationType AssignmentAST::getType() { return ASSIGNMENT;};
 
 
 
@@ -531,57 +535,121 @@ Value* FORstmtAST::codegen(driver &drv){
     ///Body -> body
     //Latch -> increment + branch to Header
 
-    std::cout<<"Work in progress!!! FORstmtAST (driver.cpp)...\n";
-    return nullptr;
+    //TODO -> fare in modo che init è una classe che raggruppa Assignment e Binding in modo tale che si può evitare di fare
+              // il cast dinamico.
+    BindingAST* initBinding = dynamic_cast<BindingAST*>(init);
+    if (initBinding) {
+        Function *fun = builder->GetInsertBlock()->getParent();
+        BasicBlock *Preheader = BasicBlock::Create(*context, "init",fun);
+        builder->CreateBr(Preheader);
+        
+        //inizializzazione
+        BasicBlock *Header = BasicBlock::Create(*context, "header",fun);
+        BasicBlock *Body = BasicBlock::Create(*context, "body",fun);
+        BasicBlock *ExitBlock = BasicBlock::Create(*context, "exit block",fun);
 
-    /*
-    Function *fun = builder->GetInsertBlock()->getParent();
-    BasicBlock *Preheader = BasicBlock::Create(*context, "init",fun);
-    builder->CreateBr(Preheader);
+        builder->SetInsertPoint(Preheader);
+
+        std::string varName = initBinding->getName();
+        AllocaInst* oldVar;
+        Value* initVal = initBinding->codegen(drv);;
+        if (!initVal) return nullptr;
+        
+        //controllo se sono assigment -> il getType mi restituisce ASSIGMENT o BINDING
+        if (initBinding->getType() == BINDING){
+            oldVar = drv.NamedValues[varName];
+            drv.NamedValues[varName] = (AllocaInst*) initVal;  
+        }
+
+        builder->CreateBr(Header);
+
+        //valutazione condizione
+        builder->SetInsertPoint(Header);
+        Value *condVal = condExp->codegen(drv);
+        if(!condVal) return nullptr;
+        builder->CreateCondBr(condVal, Body, ExitBlock);
+        //body
+        builder->SetInsertPoint(Body);
+        Value *bodyVal = body->codegen(drv);
+        if(!bodyVal) return nullptr;
+        //step
+        Value* stepVal = increment->codegen(drv);
+        if(!stepVal) return nullptr;
+
+        //br incondizionato all'inizio del loop
+        builder->CreateBr(Header);
+        //End loop
+        builder->SetInsertPoint(ExitBlock);
+        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),1);
+        P->addIncoming(ConstantFP::getNullValue(Type::getDoubleTy(*context)),Header);
+
+        if(initBinding->getType() == BINDING){
+            std::cout<<"Sono un Binding, riprendo la variabile precedente\n";
+            drv.NamedValues[varName] = oldVar;   //rimetto i valori originali della symb
+        }
+        return P;
+
+
+    } else if(AssignmentAST* initAssignment = dynamic_cast<AssignmentAST*>(init)){
+        
+        Function *fun = builder->GetInsertBlock()->getParent();
+        BasicBlock *Preheader = BasicBlock::Create(*context, "preheader",fun);
+        builder->CreateBr(Preheader);
+        
+        //inizializzazione
+        BasicBlock *Header = BasicBlock::Create(*context, "header",fun);
+        BasicBlock *Body = BasicBlock::Create(*context, "body",fun);
+        BasicBlock *ExitBlock = BasicBlock::Create(*context, "exit block",fun);
+
+        builder->SetInsertPoint(Preheader);
+
+        std::string varName = initAssignment->getName();
+        AllocaInst* oldVar;
+        Value* initVal = initAssignment->codegen(drv);;
+        if (!initVal) return nullptr;
+        
+        //controllo se sono assigment -> il getType mi restituisce ASSIGMENT o BINDING
+        if (initAssignment->getType() == BINDING){
+            std::cout<<"Sono un Binding, alloco una nuova variabile temporanea\n";
+            oldVar = drv.NamedValues[varName];
+            drv.NamedValues[varName] = (AllocaInst*) initVal;  
+        }
+
+        builder->CreateBr(Header);
+
+        //valutazione condizione
+        builder->SetInsertPoint(Header);
+        Value *condVal = condExp->codegen(drv);
+        if(!condVal) return nullptr;
+        builder->CreateCondBr(condVal, Body, ExitBlock);
+        //body
+        builder->SetInsertPoint(Body);
+        Value *bodyVal = body->codegen(drv);
+        if(!bodyVal) return nullptr;
+        //step
+        Value* stepVal = increment->codegen(drv);
+        if(!stepVal) return nullptr;
+
+        //br incondizionato all'inizio del loop
+        builder->CreateBr(Header);
+        //End loop
+        builder->SetInsertPoint(ExitBlock);
+        PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),1);
+        P->addIncoming(ConstantFP::getNullValue(Type::getDoubleTy(*context)),Header);
+
+        if(initAssignment->getType() == BINDING){
+            drv.NamedValues[varName] = oldVar;   //rimetto i valori originali della symb
+        }
+        return P;
+
+
+    }else{
+        std::cout<<"Error invalid casting of init...(FORstmtAST...)\n";
+        return nullptr;
+    }
+
     
-    //inizializzazione
-    BasicBlock *Header = BasicBlock::Create(*context, "cond",fun);
-    BasicBlock *Body = BasicBlock::Create(*context, "loop",fun);
-    BasicBlock *ExitBlock = BasicBlock::Create(*context, "endloop",fun);
 
-    builder->SetInsertPoint(Preheader);
-
-    std::string varName = init->getName();
-    AllocaInst* oldVar;
-    Value* initVal = init->codegen(drv);;
-    if (!initVal) return nullptr;
-    //controllo se sono assigment -> il getType mi restituisce ASSIGMENT o BINDING
-    if (init->getType() == BINDING){
-    oldVar = drv.NamedValues[varName];
-    drv.NamedValues[varName] = (AllocaInst*) initVal;  
-    }
-    builder->CreateBr(Header);
-    //valutazione condizione
-    builder->SetInsertPoint(Header);
-    Value *condVal = cond->codegen(drv);
-    if(!condVal) return nullptr;
-    builder->CreateCondBr(condVal, Body, ExitBlock);
-    //body
-    builder->SetInsertPoint(Body);
-    Value *bodyVal = body->codegen(drv);
-    if(!bodyVal) return nullptr;
-    //step
-    Value* stepVal = step->codegen(drv);
-    if(!stepVal) return nullptr;
-
-    //br incondizionato all'inizio del loop
-    builder->CreateBr(Header);
-    //End loop
-    builder->SetInsertPoint(ExitBlock);
-    PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),1);
-    P->addIncoming(ConstantFP::getNullValue(Type::getDoubleTy(*context)),Header);
-
-    if(init->getType() == BINDING){
-    drv.NamedValues[varName] = oldVar; //rimetto i valori originali della symb
-    }
-    return P;
-
-    */
   
 };
 
