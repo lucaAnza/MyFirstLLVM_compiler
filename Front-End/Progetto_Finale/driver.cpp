@@ -522,37 +522,67 @@ Value* IFstmtAST::codegen(driver &drv){
 };
 
 /*************************FOR stmt AST******************************/
-FORstmtAST::FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body) : init(init) , condExp(condExp) , assignment(assignment) , stmt(stmt) {}
+FORstmtAST::FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body) : init(init) , condExp(condExp) , increment(increment) , body(body) {}
 
 Value* FORstmtAST::codegen(driver &drv){
     
+    //Preheader -> Init
+    //Header -> condExp
+    ///Body -> body
+    //Latch -> increment + branch to Header
+
     std::cout<<"Work in progress!!! FORstmtAST (driver.cpp)...\n";
     return nullptr;
 
     /*
-    // TO DO
-    Value *cond = condExp->codegen(drv);
-    if(!cond){
-        std::cout<<"ERRORE -> Condizione inesistente!\n";
-        return nullptr;
-    }
-
     Function *fun = builder->GetInsertBlock()->getParent();
+    BasicBlock *Preheader = BasicBlock::Create(*context, "init",fun);
+    builder->CreateBr(Preheader);
     
-    BasicBlock *BodyBB = body->codegen()->getParent();
-    builder->CreateCondBr(cond, BodyBB, afterBB);
+    //inizializzazione
+    BasicBlock *Header = BasicBlock::Create(*context, "cond",fun);
+    BasicBlock *Body = BasicBlock::Create(*context, "loop",fun);
+    BasicBlock *ExitBlock = BasicBlock::Create(*context, "endloop",fun);
 
-    //Set MergeBB writing BasicBlock
-    builder->SetInsertPoint(MergeBB);
-    PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),2);
-    P-> addIncoming(trueValue, TrueBB);
-    P-> addIncoming(falseValue, FalseBB);
+    builder->SetInsertPoint(Preheader);
+
+    std::string varName = init->getName();
+    AllocaInst* oldVar;
+    Value* initVal = init->codegen(drv);;
+    if (!initVal) return nullptr;
+    //controllo se sono assigment -> il getType mi restituisce ASSIGMENT o BINDING
+    if (init->getType() == BINDING){
+    oldVar = drv.NamedValues[varName];
+    drv.NamedValues[varName] = (AllocaInst*) initVal;  
+    }
+    builder->CreateBr(Header);
+    //valutazione condizione
+    builder->SetInsertPoint(Header);
+    Value *condVal = cond->codegen(drv);
+    if(!condVal) return nullptr;
+    builder->CreateCondBr(condVal, Body, ExitBlock);
+    //body
+    builder->SetInsertPoint(Body);
+    Value *bodyVal = body->codegen(drv);
+    if(!bodyVal) return nullptr;
+    //step
+    Value* stepVal = step->codegen(drv);
+    if(!stepVal) return nullptr;
+
+    //br incondizionato all'inizio del loop
+    builder->CreateBr(Header);
+    //End loop
+    builder->SetInsertPoint(ExitBlock);
+    PHINode *P = builder->CreatePHI(Type::getDoubleTy(*context),1);
+    P->addIncoming(ConstantFP::getNullValue(Type::getDoubleTy(*context)),Header);
+
+    if(init->getType() == BINDING){
+    drv.NamedValues[varName] = oldVar; //rimetto i valori originali della symb
+    }
     return P;
-    */
 
-    
-   
-    
+    */
+  
 };
 
 
