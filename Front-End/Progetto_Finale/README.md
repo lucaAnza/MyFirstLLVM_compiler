@@ -686,10 +686,100 @@ Feature:
 
 #### ForStatement (step2_2)
 
+0. Designed the following _for_ structure:
 
+    <img src="img/Loop_struct.png" alt="for" width=20%>
 
+1. Add <b>class</b>, <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
 
+    ```c++
 
+    ///////////////////////////////////CLASS//////////////////////////////////////////
+    %code requires {
+    ...
+    class FORstmtAST; //new
+    }
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+    %type <RootAST*> init;
+    %type <FORstmtAST*> forstmt;
+    
+
+    ///////////////////////////////////RULES//////////////////////////////////////////
+    
+    //Modified
+    stmt:
+        assignment                 { $$ = $1;}  // <--old
+        | block                    { $$ = $1;}  // <--old
+        | ifstmt                   { $$ = $1;}  // <--old
+        | forstmt                  { $$ = $1;}  // <--NEW
+        | exp                      { $$ = $1;}; // <--old
+
+    //Modified
+    exp:
+        "-" exp                { $$ = new BinaryExprAST('-',new NumberExprAST(0),$2);} // <-- NEW 
+        | exp "+" exp           { $$ = new BinaryExprAST('+',$1,$3); }    // <--old
+        | exp "-" exp           { $$ = new BinaryExprAST('-',$1,$3); }  // <--old
+        | exp "*" exp           { $$ = new BinaryExprAST('*',$1,$3); }  // <--old
+        | exp "/" exp           { $$ = new BinaryExprAST('/',$1,$3); }  // <--old
+        | idexp                 { $$ = $1; }                            // <--old
+        | "(" exp ")"           { $$ = $2; }                            // <--old
+        | "number"              { $$ = new NumberExprAST($1); }         // <--old
+        | expif                 { $$ = $1; };                           // <--old
+    
+    //New
+    forstmt:  
+        "for" "(" init ";" condexp ";" assignment ")" stmt     { $$ = new FORstmtAST($3,$5,$7,$9); };
+
+    init:
+        binding             { $$ = $1; }
+        |  assignment         { $$ = $1; };
+
+    
+    ///////////////////////////////////SCANNER////////////////////////////////////////
+    FOR        "for"
+    
+
+    ```
+2. Add class header(<b>driver.hpp</b>)
+
+    ```c++
+    //Modified
+    class BindingAST; // Add method getType()
+    class AssignmentAST; // Add method getType()
+    
+    ///VariableOperationType
+    enum VariableOperationType {
+        ASSIGNMENT,
+        BINDING
+    };
+
+    /// FORstmtAST
+    class FORstmtAST: public ExprAST{
+    private:
+        RootAST* init;
+        ExprAST* condExp;
+        AssignmentAST* increment;
+        ExprAST* body;
+
+    public:
+        FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body);
+        Value* codegen(driver& drv) override;
+    };
+    ```
+
+3. Add class implementation(<b>driver.cpp</b>)
+
+    ```c++
+    /*************************FORstmtAST******************************/
+        //Full implementation on driver.cpp
+    ```
+
+4. Add token on <b>scanner.ll</b>
+
+    ```c++
+    "for"    return yy::parser::make_FOR(loc);
+    ```
 
 ### Grammar Level 3.0
 

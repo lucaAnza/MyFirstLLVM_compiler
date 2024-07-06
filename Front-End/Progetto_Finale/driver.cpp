@@ -446,13 +446,14 @@ Value* IFExprAST::codegen(driver &drv){
     builder->SetInsertPoint(TrueBB);
     Value* trueValue = trueExpr->codegen(drv);
     if(!trueValue) return nullptr;
+    TrueBB = builder->GetInsertBlock();     //Serve per riottenere il riferimento in futuro
     builder->CreateBr(MergeBB);
-    //fun->insert(fun->end(), FalseBB);
 
     //Set FalseBB writing BasicBlock
     builder->SetInsertPoint(FalseBB);
     Value* falseValue = falseExpr->codegen(drv);
     if(!falseValue) return nullptr;
+    FalseBB = builder->GetInsertBlock();       //Serve per riottenere il riferimento in futuro
     builder->CreateBr(MergeBB);
 
     //Set MergeBB writing BasicBlock
@@ -488,13 +489,14 @@ Value* IFstmtAST::codegen(driver &drv){
         builder->SetInsertPoint(TrueBB);
         Value* trueValue = trueAssignment->codegen(drv);
         if(!trueValue) return nullptr;
+        TrueBB = builder->GetInsertBlock();     //Serve per riottenere il riferimento in futuro
         builder->CreateBr(MergeBB);
-        //fun->insert(fun->end(), FalseBB);
 
         //Set FalseBB writing BasicBlock
         builder->SetInsertPoint(FalseBB);
         Value* falseValue = falseAssignment->codegen(drv);
         if(!falseValue) return nullptr;
+        FalseBB = builder->GetInsertBlock();       //Serve per riottenere il riferimento in futuro
         builder->CreateBr(MergeBB);
 
         //Set MergeBB writing BasicBlock
@@ -514,6 +516,7 @@ Value* IFstmtAST::codegen(driver &drv){
         builder->SetInsertPoint(TrueBB);
         Value* trueValue = trueAssignment->codegen(drv);
         if(!trueValue) return nullptr;
+        TrueBB = builder->GetInsertBlock();     //Serve per riottenere il riferimento in futuro
         builder->CreateBr(MergeBB);
 
         //Set MergeBB writing BasicBlock
@@ -584,7 +587,6 @@ Value* FORstmtAST::codegen(driver &drv){
         P->addIncoming(ConstantFP::getNullValue(Type::getDoubleTy(*context)),Header);
 
         if(initBinding->getType() == BINDING){
-            std::cout<<"Sono un Binding, riprendo la variabile precedente\n";
             drv.NamedValues[varName] = oldVar;   //rimetto i valori originali della symb
         }
         return P;
@@ -610,7 +612,6 @@ Value* FORstmtAST::codegen(driver &drv){
         
         //controllo se sono assigment -> il getType mi restituisce ASSIGMENT o BINDING
         if (initAssignment->getType() == BINDING){
-            std::cout<<"Sono un Binding, alloco una nuova variabile temporanea\n";
             oldVar = drv.NamedValues[varName];
             drv.NamedValues[varName] = (AllocaInst*) initVal;  
         }
