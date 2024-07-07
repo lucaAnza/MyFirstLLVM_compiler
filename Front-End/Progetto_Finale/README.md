@@ -37,13 +37,17 @@ return builder->CreateLoad(A->getAllocatedType(), A, Name.c_str());
 
 ### IR C++ Api
 
-<span style="color:yellow"> Take drawio IR_API and made a screen (TODO) </span>
+<img src="img/IR_API.png" alt="Api-c++ 1" width = 80%>
+
+<img src="img/IR_API2.png" alt="Api-c++ 2" width = 80%>
 
 <br><br>
 
-⚠ Remember to install dependencies package!
+
 
 ## How to start the compiler
+
+⚠ Remember to install dependencies package!
 
 1. `make`
 2. `./kcomp <filename>` -> Stampa in stderr il codice IR generato.
