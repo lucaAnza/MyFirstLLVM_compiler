@@ -65,6 +65,9 @@
   IF         "if"
   ELSE       "else"
   FOR        "for"
+  AND        "and"
+  OR         "or"
+  NOT        "not"
 ;
 
 %token <std::string> IDENTIFIER "id"
@@ -92,6 +95,7 @@
 %type <IFstmtAST*> ifstmt;
 %type <RootAST*> init;
 %type <FORstmtAST*> forstmt;
+%type <ExprAST*> relexp;
 
 %%
 %start startsymb;
@@ -132,6 +136,8 @@ idseq:
 %left ":" "?";
 %left "<" "==";
 %left "+" "-";
+%left "not";
+%left "and" "or";
 %left "*" "/";
 
 stmts:
@@ -190,6 +196,13 @@ expif:
 
 
 condexp:
+  relexp                 {$$ = $1;}
+| relexp "and" condexp   {$$ = new BinaryExprAST('a',$1,$3);}
+| relexp "or" condexp    {$$ = new BinaryExprAST('o',$1,$3);}
+| "not" condexp          {$$ = new BinaryExprAST('n',nullptr,$2);}
+| "(" condexp ")"        {$$ = $2;};
+
+relexp:
   exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
 | exp "==" exp              { $$ = new BinaryExprAST('=',$1,$3); }
 

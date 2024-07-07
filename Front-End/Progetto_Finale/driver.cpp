@@ -124,9 +124,21 @@ BinaryExprAST::BinaryExprAST(char Op, ExprAST* LHS, ExprAST* RHS):
 // operando. Con i valori memorizzati in altrettanti registri SSA si
 // costruisce l'istruzione utilizzando l'opportuno operatore
 Value *BinaryExprAST::codegen(driver& drv) {
+    
+    //Caso in cui viene inserita una NOT
+    if(Op == 'n'){
+        Value *R = RHS->codegen(drv);
+        if(!R){
+            std::cout<<"{BinaryExprAST}::codegen} R is null pointer (NOT - Operation) \n";
+            return nullptr;
+        }
+        return builder->CreateNot(R,"notres");
+    }
+    
     Value *L = LHS->codegen(drv);
     Value *R = RHS->codegen(drv);
     if (!L || !R) {
+        std::cout<<"{BinaryExprAST}::codegen} errore: L or R is null pointer\n";
         return nullptr;
     }
     switch (Op) {
@@ -142,6 +154,10 @@ Value *BinaryExprAST::codegen(driver& drv) {
         return builder->CreateFCmpULT(L,R,"lessIF");
     case '=':
         return builder->CreateFCmpUEQ(L,R,"equalIF");
+    case 'a':
+        return builder->CreateLogicalAnd(L,R,"andres");
+    case 'o':
+        return builder->CreateLogicalOr(L,R,"orres");
     default:  
         return LogErrorV("Operatore binario non supportato");
     }

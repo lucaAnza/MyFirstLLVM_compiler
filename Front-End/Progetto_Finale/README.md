@@ -783,4 +783,127 @@ Feature:
 
 ### Grammar Level 3.0
 
-<span style="color:yellow">//  Work in progress..</span>
+Add these feature starting from Grammar 2.0
+
+<img src="img/Grammar_liv2.png" alt="liv2" width=40%></img>
+
+Feature:
+
+1. and,or,not.
+2. for statement.
+
+
+3. Add <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
+
+    ```c++
+
+    ///////////////////////////////////TYPE//////////////////////////////////////////
+    %type <ExprAST*> relexp;
+    
+    ///////////////////////////////////RULES//////////////////////////////////////////
+    
+    //Modified
+    %left ":" "?";
+    %left "<" "==";
+    %left "+" "-";   
+    %left "not";       // <-- new
+    %left "and" "or";  // <-- new
+    %left "*" "/";
+
+    //New
+    condexp:
+        relexp                   {$$ = $1;}
+        | relexp "and" condexp   {$$ = new BinaryExprAST('a',$1,$3);}
+        | relexp "or" condexp    {$$ = new BinaryExprAST('o',$1,$3);}
+        | "not" condexp          {$$ = new BinaryExprAST('n',nullptr,$2);}
+        | "(" condexp ")"        {$$ = $2;};
+
+    relexp:
+        exp "<" exp               { $$ = new BinaryExprAST('<',$1,$3); }
+        exp "==" exp            { $$ = new BinaryExprAST('=',$1,$3); }
+
+    ///////////////////////////////////SCANNER////////////////////////////////////////
+    AND        "and"
+    OR         "or"
+    NOT        "not"
+    ```
+2. Add class header(<b>driver.hpp</b>)
+
+    ```c++
+    //Modified
+    class BindingAST; // Add method getType()
+    class AssignmentAST; // Add method getType()
+    
+    ///VariableOperationType
+    enum VariableOperationType {
+        ASSIGNMENT,
+        BINDING
+    };
+
+    /// FORstmtAST
+    class FORstmtAST: public ExprAST{
+    private:
+        RootAST* init;
+        ExprAST* condExp;
+        AssignmentAST* increment;
+        ExprAST* body;
+
+    public:
+        FORstmtAST(RootAST* init, ExprAST* condExp, AssignmentAST* increment, ExprAST* body);
+        Value* codegen(driver& drv) override;
+    };
+    ```
+
+3. Change class implementation of `BinaryExprAST::codegen`(<b>driver.cpp</b>)
+
+    ```c++
+    /*************************FORstmtAST******************************/
+    Value *BinaryExprAST::codegen(driver& drv) {
+    
+    ///// NEW /////   ---> NOT
+    if(Op == 'n'){
+        Value *R = RHS->codegen(drv);
+        if(!R){
+            std::cout<<"{BinaryExprAST}::codegen} R is null pointer (NOT - Operation) \n";
+            return nullptr;
+        }
+        return builder->CreateNot(R,"notres");
+    }
+    ///// NEW /////   ---> NOT
+    
+    Value *L = LHS->codegen(drv);
+    Value *R = RHS->codegen(drv);
+    if (!L || !R) {
+        std::cout<<"{BinaryExprAST}::codegen} errore: L or R is null pointer\n";
+        return nullptr;
+    }
+    switch (Op) {
+        case '+':
+            return builder->CreateFAdd(L,R,"addres");
+        case '-':
+            return builder->CreateFSub(L,R,"subres");
+        case '*':
+            return builder->CreateFMul(L,R,"mulres");
+        case '/':
+            return builder->CreateFDiv(L,R,"addres");
+        case '<':
+            return builder->CreateFCmpULT(L,R,"lessIF");
+        case '=':
+            return builder->CreateFCmpUEQ(L,R,"equalIF");
+        case 'a':                                            //NEW -> AND
+            return builder->CreateLogicalAnd(L,R,"andres");  //NEW -> AND
+        case 'o':                                            //NEW -> OR
+            return builder->CreateLogicalOr(L,R,"orres");    //NEW -> OR
+        default:  
+            return LogErrorV("Operatore binario non supportato");
+        }
+    };
+    ```
+
+4. Add token on <b>scanner.ll</b>
+
+    ```c++
+    "and"    return yy::parser::make_AND(loc);
+    "or"     return yy::parser::make_OR(loc);
+    "not"    return yy::parser::make_NOT(loc);
+    ```
