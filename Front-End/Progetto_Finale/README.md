@@ -794,10 +794,8 @@ Add these feature starting from Grammar 2.0
 Feature:
 
 1. and,or,not.
-2. for statement.
 
-
-3. Add <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
+2. Add <b>type</b> and <b>rules</b> on grammar(</b>parser.yy<b>)
 
     ```c++
 
@@ -831,7 +829,7 @@ Feature:
     OR         "or"
     NOT        "not"
     ```
-2. Add class header(<b>driver.hpp</b>)
+3. Add class header(<b>driver.hpp</b>)
 
     ```c++
     //Modified
@@ -858,7 +856,7 @@ Feature:
     };
     ```
 
-3. Change class implementation of `BinaryExprAST::codegen`(<b>driver.cpp</b>)
+4. Change class implementation of `BinaryExprAST::codegen`(<b>driver.cpp</b>)
 
     ```c++
     /*************************FORstmtAST******************************/
@@ -904,7 +902,7 @@ Feature:
     };
     ```
 
-4. Add token on <b>scanner.ll</b>
+5. Add token on <b>scanner.ll</b>
 
     ```c++
     "and"    return yy::parser::make_AND(loc);
