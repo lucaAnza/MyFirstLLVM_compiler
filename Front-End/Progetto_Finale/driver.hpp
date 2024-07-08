@@ -239,7 +239,6 @@ class IFstmtAST: public ExprAST{
 };
 
 /// FORstmtAST
-
 class FORstmtAST: public ExprAST{
   private:
     RootAST* init;

@@ -42,11 +42,11 @@ K → Numero stati ( va dedotto dal numero di righe ) <br>
 
 ### Input-example1
 
-Input - Graphic  
+Input - Graphic 📈
 
 <img src="img/risultato_finale.png" alt="input"><br>
 
-Input - Text (output of `postorder.cpp` executed with `tree1.txt`)
+Input - Text 📄 (output of `postorder.cpp` executed with `tree1.txt`)
  
 ```c++
 a b c   //Simboli dell’alfabeto (ε,a,b,c) 
@@ -87,22 +87,34 @@ a b c   //Simboli dell’alfabeto (ε,a,b,c)
 
 ### Output-example1
 
-Output - Graphic
+Output - Graphic 📈
 
-<table style="width : 60%;">
+<table style="width : 80%;">
      <tr>
         <td><h4>Letter</h4></td>
         <td><h4>Number</h4></td>
+        <td><h4>State set</h4></td> 
     </tr>
     <tr>
         <td><img src="img/letter_deterministic_solution.png" alt="input" width=100%><br></td>
         <td><img src="img/number_deterministic_solution.png.png" alt="input" width=100%><br></td>
+        <td>
+        A = {0} <br>
+        B = {1,2,6,8,9,10,12} <br>
+        C = {3,4,6,7,9,10} <br>
+        D = {11,13} <br>
+        E = {6,7,9,10} <br>
+        F = {5,13} <br>
+        </td>
     </tr>
 </table>
 
+
+
+  
 <br>
 
-Output - Text
+Output - Text 📄
 
 ```c++
 // State set
@@ -138,11 +150,11 @@ Output - Text
 
 ### Input-example2
 
-Input - Graphic  (<span style="color:yellow">⚠️  this input isn't compatible with programm data structures</span>)
+Input - Graphic 📈  (<span style="color:yellow">⚠️  this input isn't compatible with programm data structures</span>)
 
 <img src="img/non_deterministic_auto.png" alt="input"><br>
 
-Input - Text     (<span style="color:yellow">⚠️  this input isn't compatible with programm data structures</span>)
+Input - Text 📄    (<span style="color:yellow">⚠️  this input isn't compatible with programm data structures</span>)
 
 ```c++
 a b                             //Simboli dell’alfabeto (ε,a,b) 
@@ -171,7 +183,7 @@ a b                             //Simboli dell’alfabeto (ε,a,b)
 
 ### Output-example2
 
-Output - Graphic
+Output - Graphic 📈
 
 <table>
     <tr>
@@ -180,7 +192,8 @@ Output - Graphic
     </tr>
 
 </table>
-Output - Text
+
+Output - Text 📄
 
 ```c++
 // State set
@@ -217,7 +230,7 @@ char* simboloInput;   // IC
 int* state1,*state2;   // STATE1,STATE2
 ```
 
-Graphic:
+Graphic📈:
 
 <img src="img/data_structure_part1.png" alt="input">
 
@@ -239,7 +252,7 @@ Example: On explanation you can find the solution of input example `tree1.txt`
 
 ### Input-example1
 
-Input - Text (`tree1.txt`)
+Input - Text 📄 (`tree1.txt`)
 
 ```text
 a b c
@@ -249,11 +262,11 @@ a b c
 
 ### Output-example1
 
-Output - Graphic
+Output - Graphic 📈
 
 <img src="img/risultato_finale.png" alt="risultato" width=30%>
 
-Output - Text
+Output - Text 📄
 
 ```c++
 a b c   //Simboli dell’alfabeto (ε,a,b,c) 

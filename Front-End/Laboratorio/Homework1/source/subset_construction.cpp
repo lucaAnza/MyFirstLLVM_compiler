@@ -199,7 +199,10 @@ bool inputStream(int &k){
 
 }
 
-
+/// @brief 
+/// @param output_set -> set dove verrà inserito il risultato della closure.
+/// @param start -> indice stato di partenza.
+/// @param dim -> numero di stati (dimensione dell'array)
 void closure(set<int> &output_set , int start , int dim){
 
     if(start == dim || simboloInput[start] != EPSILON){   //caso base
@@ -262,23 +265,25 @@ void subsetConstructionSolver (const int k , bool debug) {
                         }
                     }
                 }
-                if(T.size() != 0) {        // Per controllare che dagli stati di N esce almeno un transizione etichettata 's'
+                // Calcolo T' solo se dagli stati di N esce almeno un transizione etichettata 's'
+                if(T.size() != 0) {        
                     //cout<<"     [DEBUG : Join in final steps with T.size() = "<<T.size()<<" ]"<<endl;
+
                     // T' = T(Closure)
-                    T_Primo.clear();  //svuota SET
+                    T_Primo.clear();  
                     for (const int& stato : T) {      // Per ogni T fai la closure
                         //cout<<"Closure("<<stato<<")"<<endl;
                         closure(T_Primo,stato,k);       
                     }
                     char res = (char) findSet(mappa,T_Primo);   // La funzione restituisce la lettere se uno stato è marcato altrimenti %
                     if( res == NOT_MARK){   // Se è uno stato non marcato
-                        //printSet(T_Primo);
-                        // ẟ(0,a) = 1
-                        transizioni[make_pair(starting_it_char,s )] = it_char;  
-                        // A = { 1, ...}
+                        //printSet(T_Primo);  // DEBUG
+                        // Creo un nuovo stato denominato con la lettera  "it_char".
+                        transizioni[make_pair(starting_it_char,s )] = it_char;   // Ex: (A,'b') = C
                         mappa[it_char] = T_Primo;
-                        it_char++;
+                        it_char++; // A -> B , B -> C , ...
                     }else{
+                        //Assegno la transizione ad uno stato già esistente "res".
                         transizioni[make_pair(starting_it_char,s )] = res;
                     }
                 }
@@ -286,7 +291,7 @@ void subsetConstructionSolver (const int k , bool debug) {
         }
         starting_it_char++;
         //cout<<"starting("<<starting_it_char<<") vs char("<<it_char<<")"<<endl;
-        if(starting_it_char < it_char)
+        if(starting_it_char < it_char)  // Controllo se esistono nuovi stati non marcati
             Q = mappa[starting_it_char];   
     }
 
@@ -353,13 +358,7 @@ void subsetConstructionSolver (const int k , bool debug) {
             it++;
         }
     }
-        
-        
     
-
-    
-    
-
 }
 
 
