@@ -3,7 +3,13 @@
 Lo scopo principale del homework è quello di implementare <b>Subset Construction</b> Algoritm.<br>
 Il progetto è diviso in 2 parti.
  - Part1: Subset Construction.
- - Part2: Creazione di un automa non deterministico a partire da un albero.
+ - Part2: Creazione di un automa non deterministico a partire da un albero. 
+
+<br>
+
+è possibile trovare un esempio di Subset Construction nel file `SubsetConstruction_explanation+example.pdf`. <br>
+(Example 1 è un automa inventato) <br>
+(Example 2 riguarda l'input di `tree1.txt`). <br>
   
 <br>
 
